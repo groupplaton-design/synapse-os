@@ -194,8 +194,21 @@ This is the positioning anchor against Copilot+ PC and Apple Intelligence.
 
 - **Anonymous Pro subscription** — payment via Lightning Network / Monero / USDT-TRC20. No email, no name. UUID only. (Mullvad VPN model.)
 - **System-wide kill switch** — single button disables all network. Creator / journalist mode.
-- **Tor button** in tray — one-click routes all traffic through Tor.
-- **Snowflake bridge** opt-in at onboarding — helps censored users access Tor.
+
+#### Layered anonymity model
+
+There is no single "anonymity button" — different threats need different tools. Veil Agent helps the user pick the right layer for the task. We ship three, from light to paranoid:
+
+| Layer | Tool | Threat it defeats | Cost |
+|---|---|---|---|
+| **1. Unblock** | AmneziaWG / obfuscated VPN (Shadowsocks, Cloak) | DPI, regional blocks (RU / Iran / China) | fast, low latency |
+| **2. Hide IP** | **Tor** (+ Snowflake bridge if Tor itself is blocked) | local observer, IP-based tracking, access to `.onion` | medium latency |
+| **3. Hide metadata** | **Nym mixnet** ("Stealth / Paranoid mode") | **global observer + traffic-pattern / timing correlation** | high latency |
+
+- **Tor button** in tray — one-click routes all traffic through Tor. Snowflake bridge opt-in at onboarding helps censored users reach Tor.
+- **Nym mixnet (Stealth mode)** — 5-hop mixnet with cover traffic and packet mixing. Unlike Tor (onion-routing, hides IP only), Nym also hides *traffic patterns and metadata*, defeating the global-observer timing-correlation attack that Tor's own threat model concedes. Slower than a plain VPN — reserved for the highest-stakes sessions. Nym's unlinkable credential payments align ideologically with our anonymous-subscription model.
+
+> Tor is **not** deprecated and Nym does **not** replace it — they sit side by side under different threat models. Tor remains the workhorse for anonymous browsing and `.onion`; Nym is the metadata-grade upgrade for users facing a global adversary.
 
 ---
 
@@ -226,6 +239,7 @@ Preinstalled (opt-in import of configs):
 - **WireGuard** (raw configs)
 - **AmneziaVPN** — Russian open-source VPN with strong anti-censorship protocols (OpenVPN+Cloak, Shadowsocks, WireGuard, AmneziaWG). Critical for Russia / Iran / China markets.
 - **Shadowsocks / V2Ray / Xray** clients — for censorship circumvention so AI cloud APIs can be reached from restricted regions.
+- **NymVPN** — mixnet client powering Stealth mode (see *Layered anonymity model* above). Metadata-grade privacy, opt-in.
 
 ### Distributed Local Inference (killer feature)
 
