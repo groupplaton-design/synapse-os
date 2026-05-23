@@ -55,6 +55,12 @@ jobs:
           echo "--- output tree ---"
           sudo find output -type f -printf '%p  %s bytes\n'
 
+      - name: Fix output ownership
+        # bootc-image-builder writes the ISO as root; later steps run as the
+        # runner user and otherwise cannot read it (so it never reaches the
+        # artifact / release).
+        run: sudo chown -R "$(id -u):$(id -g)" output
+
       - name: Checksum
         run: |
           ISO=$(sudo find output -name '*.iso' | head -n1)
