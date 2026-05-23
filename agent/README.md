@@ -13,21 +13,40 @@ Language decision: **Rust** (single static binary, strong async/MCP ecosystem,
 memory safety for a daemon with filesystem access). See `docs/build-plan.md`.
 
 What exists now: process lifecycle, TOML config with defaults, structured
-logging, graceful shutdown, a local `/health` + `/version` API, and the **first
-permission-gated tool** — `fs_read`.
+logging, graceful shutdown, a local `/health` + `/version` API, the **first
+permission-gated tool** (`fs_read`), and **local LLM chat** via Ollama.
 
 ```
 agent/
   Cargo.toml            # workspace
   veil-agentd/          # the daemon crate
-    src/main.rs         # entry point: args -> config -> logging -> serve
+    src/main.rs         # entry point: `run` (daemon) and `chat` (omnibox stub)
     src/lib.rs          # library root
     src/config.rs       # TOML config + defaults (tested)
-    src/server.rs       # axum API: /health, /version, /tools/fs/read (tested)
+    src/server.rs       # axum API: /health, /version, /chat, /tools/fs/read
     src/permissions.rs  # Approver trait + FsPolicy guardrails (tested)
     src/tools.rs        # fs_read tool (tested)
+    src/llm.rs          # ChatBackend trait + Ollama backend (tested)
     agent.example.toml  # sample config
 ```
+
+### Talk to a local model
+
+With [Ollama](https://ollama.com) running (`ollama serve` + `ollama pull
+llama3.2`):
+
+```
+cd agent
+# one-shot from the terminal (omnibox stand-in):
+cargo run -p veil-agentd -- chat "summarize the idea of Veil OS"
+
+# or via the running daemon:
+cargo run -p veil-agentd            # in one shell
+curl -s localhost:7421/chat -d '{"prompt":"hello"}' -H 'content-type: application/json'
+```
+
+The `ChatBackend` trait keeps the model source pluggable — cloud passthrough and
+local↔cloud routing (per `docs/vision.md`) implement the same trait later.
 
 ### Permission model
 

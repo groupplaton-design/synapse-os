@@ -19,3 +19,7 @@ fs_max_read_bytes = 1048576
 # Require interactive approval for tool actions. While true and no omnibox
 # approver is attached, guarded actions are denied. Set false for headless use.
 require_approval = true
+
+# --- Local LLM (Ollama) -----------------------------------------------------
+ollama_url = "http://127.0.0.1:11434"
+default_model = "llama3.2"

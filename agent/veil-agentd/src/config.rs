@@ -24,6 +24,10 @@ pub struct Config {
     /// interactive approver is attached (the current skeleton), guarded actions
     /// are denied — the safe default until the omnibox prompt lands.
     pub require_approval: bool,
+    /// Base URL of the local Ollama server.
+    pub ollama_url: String,
+    /// Model used for chat when the request does not name one.
+    pub default_model: String,
 }
 
 impl Default for Config {
@@ -35,6 +39,8 @@ impl Default for Config {
             fs_allowed_roots: Vec::new(),
             fs_max_read_bytes: 1_048_576,
             require_approval: true,
+            ollama_url: "http://127.0.0.1:11434".to_string(),
+            default_model: "llama3.2".to_string(),
         }
     }
 }

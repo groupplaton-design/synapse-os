@@ -6,6 +6,7 @@
 //! `docs/build-plan.md` Track B.
 
 pub mod config;
+pub mod llm;
 pub mod permissions;
 pub mod server;
 pub mod tools;

@@ -13,6 +13,7 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use crate::config::Config;
+use crate::llm::{ChatBackend, OllamaBackend};
 use crate::permissions::{
     Approver, AutoApprover, Decision, FsPolicy, PermissionRequest, RequireInteractiveApproval,
 };
@@ -24,6 +25,8 @@ pub struct AppState {
     pub started: Instant,
     pub fs_policy: Arc<FsPolicy>,
     pub approver: Arc<dyn Approver>,
+    pub chat: Arc<dyn ChatBackend>,
+    pub default_model: String,
 }
 
 /// Health response body.
@@ -50,6 +53,7 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/health", get(health))
         .route("/version", get(version))
+        .route("/chat", post(chat))
         .route("/tools/fs/read", post(tools_fs_read))
         .with_state(state)
 }
@@ -60,6 +64,39 @@ async fn health(State(state): State<AppState>) -> Json<Health> {
 
 async fn version() -> Json<serde_json::Value> {
     Json(json!({ "version": crate::VERSION }))
+}
+
+#[derive(Debug, Deserialize)]
+struct ChatRequest {
+    prompt: String,
+    #[serde(default)]
+    model: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+struct ChatResponse {
+    model: String,
+    response: String,
+}
+
+async fn chat(
+    State(state): State<AppState>,
+    Json(req): Json<ChatRequest>,
+) -> Result<Json<ChatResponse>, (StatusCode, Json<serde_json::Value>)> {
+    let model = req.model.unwrap_or_else(|| state.default_model.clone());
+    match state.chat.generate(&model, &req.prompt).await {
+        Ok(text) => Ok(Json(ChatResponse {
+            model,
+            response: text,
+        })),
+        Err(e) => {
+            tracing::warn!(%model, error = %e, "chat backend failed");
+            Err((
+                StatusCode::BAD_GATEWAY,
+                Json(json!({ "error": "llm_error", "reason": e.to_string() })),
+            ))
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -121,10 +158,13 @@ pub async fn serve(config: &Config) -> anyhow::Result<()> {
     } else {
         Arc::new(AutoApprover)
     };
+    let chat: Arc<dyn ChatBackend> = Arc::new(OllamaBackend::new(config.ollama_url.clone()));
     let state = AppState {
         started: Instant::now(),
         fs_policy,
         approver,
+        chat,
+        default_model: config.default_model.clone(),
     };
 
     let addr = config.socket_addr();
