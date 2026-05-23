@@ -7,3 +7,15 @@ listen_port = 7421
 
 # Log level when RUST_LOG is unset: trace | debug | info | warn | error
 log_level = "info"
+
+# --- Filesystem tool guardrails ---------------------------------------------
+# Roots the fs tools may read from. EMPTY = nothing readable (safe default).
+# Example: fs_allowed_roots = ["/home/user/Documents", "/home/user/Projects"]
+fs_allowed_roots = []
+
+# Largest single read, in bytes (default 1 MiB).
+fs_max_read_bytes = 1048576
+
+# Require interactive approval for tool actions. While true and no omnibox
+# approver is attached, guarded actions are denied. Set false for headless use.
+require_approval = true

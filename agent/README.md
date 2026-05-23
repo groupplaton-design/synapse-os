@@ -13,8 +13,8 @@ Language decision: **Rust** (single static binary, strong async/MCP ecosystem,
 memory safety for a daemon with filesystem access). See `docs/build-plan.md`.
 
 What exists now: process lifecycle, TOML config with defaults, structured
-logging, graceful shutdown, and a local `/health` + `/version` API. No MCP tools
-yet — those are the next increments.
+logging, graceful shutdown, a local `/health` + `/version` API, and the **first
+permission-gated tool** — `fs_read`.
 
 ```
 agent/
@@ -23,9 +23,24 @@ agent/
     src/main.rs         # entry point: args -> config -> logging -> serve
     src/lib.rs          # library root
     src/config.rs       # TOML config + defaults (tested)
-    src/server.rs       # axum API: /health, /version (tested)
+    src/server.rs       # axum API: /health, /version, /tools/fs/read (tested)
+    src/permissions.rs  # Approver trait + FsPolicy guardrails (tested)
+    src/tools.rs        # fs_read tool (tested)
     agent.example.toml  # sample config
 ```
+
+### Permission model
+
+Every tool action passes two layers:
+
+1. **Approver** (decision point) — the interactive omnibox prompt will implement
+   this. The skeleton default `RequireInteractiveApproval` *denies* anything
+   needing approval, so nothing acts behind the user's back until the UI lands.
+2. **FsPolicy** (hard guardrails) — reads must resolve (after canonicalization,
+   which neutralizes `..` traversal) under a configured `fs_allowed_roots`, be a
+   regular file, and fit `fs_max_read_bytes`.
+
+Defaults are locked down: no roots permitted, approval required.
 
 ### Run locally (needs Rust installed)
 

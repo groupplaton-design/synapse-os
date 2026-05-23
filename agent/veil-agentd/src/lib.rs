@@ -6,7 +6,9 @@
 //! `docs/build-plan.md` Track B.
 
 pub mod config;
+pub mod permissions;
 pub mod server;
+pub mod tools;
 
 /// Crate version, sourced from Cargo at build time.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Runtime configuration for `veil-agentd`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16,6 +16,14 @@ pub struct Config {
     pub listen_port: u16,
     /// Tracing log level used when `RUST_LOG` is not set.
     pub log_level: String,
+    /// Filesystem roots the fs tools may read from. Empty = nothing permitted.
+    pub fs_allowed_roots: Vec<PathBuf>,
+    /// Largest single fs read permitted, in bytes.
+    pub fs_max_read_bytes: u64,
+    /// Require interactive user approval for tool actions. When true and no
+    /// interactive approver is attached (the current skeleton), guarded actions
+    /// are denied — the safe default until the omnibox prompt lands.
+    pub require_approval: bool,
 }
 
 impl Default for Config {
@@ -24,6 +32,9 @@ impl Default for Config {
             listen_addr: IpAddr::V4(Ipv4Addr::LOCALHOST),
             listen_port: 7421,
             log_level: "info".to_string(),
+            fs_allowed_roots: Vec::new(),
+            fs_max_read_bytes: 1_048_576,
+            require_approval: true,
         }
     }
 }
@@ -59,11 +70,19 @@ mod tests {
     }
 
     #[test]
+    fn defaults_are_locked_down() {
+        let c = Config::default();
+        assert!(c.fs_allowed_roots.is_empty());
+        assert!(c.require_approval);
+    }
+
+    #[test]
     fn partial_toml_fills_defaults() {
         // Only one field provided; the rest must come from Default.
         let c: Config = toml::from_str("listen_port = 9000").unwrap();
         assert_eq!(c.listen_port, 9000);
         assert_eq!(c.log_level, "info");
+        assert!(c.require_approval);
         assert!(c.socket_addr().ip().is_loopback());
     }
 }

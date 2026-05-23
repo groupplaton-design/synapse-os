@@ -1,17 +1,29 @@
-//! Local HTTP API for the daemon. For the B-M1 skeleton this is just health
-//! and version; MCP routes are added in later increments.
+//! Local HTTP API for the daemon: health/version plus permission-gated tools.
 
-use axum::{extract::State, routing::get, Json, Router};
-use serde::Serialize;
+use axum::{
+    extract::State,
+    http::StatusCode,
+    routing::{get, post},
+    Json, Router,
+};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use std::path::Path;
+use std::sync::Arc;
 use std::time::Instant;
 
 use crate::config::Config;
+use crate::permissions::{
+    Approver, AutoApprover, Decision, FsPolicy, PermissionRequest, RequireInteractiveApproval,
+};
+use crate::tools::{fs_read, FsReadResponse, ToolError};
 
 /// Shared application state handed to every request.
 #[derive(Clone)]
 pub struct AppState {
-    /// When the daemon started, for uptime reporting.
     pub started: Instant,
+    pub fs_policy: Arc<FsPolicy>,
+    pub approver: Arc<dyn Approver>,
 }
 
 /// Health response body.
@@ -38,6 +50,7 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/health", get(health))
         .route("/version", get(version))
+        .route("/tools/fs/read", post(tools_fs_read))
         .with_state(state)
 }
 
@@ -46,17 +59,76 @@ async fn health(State(state): State<AppState>) -> Json<Health> {
 }
 
 async fn version() -> Json<serde_json::Value> {
-    Json(serde_json::json!({ "version": crate::VERSION }))
+    Json(json!({ "version": crate::VERSION }))
+}
+
+#[derive(Debug, Deserialize)]
+struct FsReadRequest {
+    path: String,
+}
+
+async fn tools_fs_read(
+    State(state): State<AppState>,
+    Json(req): Json<FsReadRequest>,
+) -> Result<Json<FsReadResponse>, (StatusCode, Json<serde_json::Value>)> {
+    let request = PermissionRequest {
+        tool: "fs".to_string(),
+        action: "read".to_string(),
+        resource: req.path.clone(),
+    };
+
+    // Permission gate: the interactive omnibox approver will plug in here.
+    if let Decision::Deny(reason) = state.approver.decide(&request) {
+        tracing::info!(resource = %request.resource, %reason, "tool request denied");
+        return Err((
+            StatusCode::FORBIDDEN,
+            Json(json!({ "error": "denied", "reason": reason })),
+        ));
+    }
+
+    match fs_read(&state.fs_policy, Path::new(&req.path)) {
+        Ok(resp) => Ok(Json(resp)),
+        Err(e) => Err(tool_error_response(e)),
+    }
+}
+
+fn tool_error_response(e: ToolError) -> (StatusCode, Json<serde_json::Value>) {
+    let (code, kind, reason) = match e {
+        ToolError::Denied(r) => (StatusCode::FORBIDDEN, "denied", r),
+        ToolError::NotAFile => (
+            StatusCode::BAD_REQUEST,
+            "not_a_file",
+            "path is not a regular file".to_string(),
+        ),
+        ToolError::TooLarge { max, actual } => (
+            StatusCode::PAYLOAD_TOO_LARGE,
+            "too_large",
+            format!("file is {actual} bytes, limit is {max}"),
+        ),
+        ToolError::Io(m) => (StatusCode::INTERNAL_SERVER_ERROR, "io_error", m),
+    };
+    (code, Json(json!({ "error": kind, "reason": reason })))
 }
 
 /// Bind the configured address and serve until a shutdown signal arrives.
 pub async fn serve(config: &Config) -> anyhow::Result<()> {
+    let fs_policy = Arc::new(FsPolicy {
+        allowed_roots: config.fs_allowed_roots.clone(),
+        max_read_bytes: config.fs_max_read_bytes,
+    });
+    let approver: Arc<dyn Approver> = if config.require_approval {
+        Arc::new(RequireInteractiveApproval)
+    } else {
+        Arc::new(AutoApprover)
+    };
     let state = AppState {
         started: Instant::now(),
+        fs_policy,
+        approver,
     };
-    let app = router(state);
-    let addr = config.socket_addr();
 
+    let addr = config.socket_addr();
+    let app = router(state);
     let listener = tokio::net::TcpListener::bind(addr).await?;
     tracing::info!(%addr, "veil-agentd listening");
 
