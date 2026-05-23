@@ -49,6 +49,7 @@ jobs:
             -v "$PWD/output:/output" \
             quay.io/centos-bootc/bootc-image-builder:latest \
             --type anaconda-iso \
+            --rootfs btrfs \
             --use-librepo=True \
             "$IMAGE"
           echo "--- output tree ---"
