@@ -1,0 +1,66 @@
+name: build-image
+
+# A-M0 pipeline: build the Veil OS base OCI image and push it to GHCR.
+# Builds run on GitHub's runners — no local Linux required to get an image.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'recipes/**'
+      - '.github/workflows/build-image.yml'
+  pull_request:
+    paths:
+      - 'recipes/**'
+      - '.github/workflows/build-image.yml'
+  workflow_dispatch:
+  schedule:
+    # Weekly rebuild to pull in upstream Aurora/Fedora security updates
+    - cron: '0 6 * * 1'
+
+env:
+  IMAGE_NAME: veil-base
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate date tag
+        id: tags
+        run: echo "date=$(date +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
+
+      - name: Build image
+        id: build
+        uses: redhat-actions/buildah-build@v2
+        with:
+          containerfiles: ./recipes/base/Containerfile
+          image: ${{ env.IMAGE_NAME }}
+          tags: latest ${{ steps.tags.outputs.date }}
+          oci: true
+
+      # Push only on real pushes to main / manual / schedule — never on PRs.
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push to GHCR
+        if: github.event_name != 'pull_request'
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: latest ${{ steps.tags.outputs.date }}
+          registry: ${{ env.IMAGE_REGISTRY }}
+
+      # TODO (A-M5 / Phase 1): sign pushed images with cosign once the signing
+      # key ceremony is done and COSIGN_PRIVATE_KEY is in repo secrets.

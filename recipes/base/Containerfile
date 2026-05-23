@@ -1,0 +1,37 @@
+# Veil OS — base image (milestone A-M0)
+#
+# We build ON TOP of Fedora Atomic, we do not rebuild Fedora. The base is
+# Universal Blue "Aurora" (KDE Plasma, built from Fedora Kinoite) which already
+# solves NVIDIA/AMD drivers and codecs for us. See recipes/base/README.md for
+# the why.
+#
+# A-M0 scope: REBRAND ONLY. No functional packages yet — the goal of this
+# milestone is a signed, installable image that boots to a "Veil OS" identity
+# and proves the whole CI -> GHCR -> ISO pipeline works end to end.
+
+FROM ghcr.io/ublue-os/aurora:stable
+
+# --- Rebrand os-release (what shows in About / login / neofetch) ------------
+# Conservative: we keep ID/ID_LIKE so Fedora/ublue tooling and package managers
+# keep working. We only change the human-facing names and add VEIL_* markers.
+RUN sed -i \
+      -e 's/^NAME=.*/NAME="Veil OS"/' \
+      -e 's/^PRETTY_NAME=.*/PRETTY_NAME="Veil OS (alpha)"/' \
+      -e 's/^VARIANT=.*/VARIANT="Veil OS Base"/' \
+      -e 's/^VARIANT_ID=.*/VARIANT_ID=veil-base/' \
+      /usr/lib/os-release && \
+    printf '%s\n' \
+      'VEIL_EDITION="base"' \
+      'VEIL_VERSION="2026.06.0-alpha"' \
+      >> /usr/lib/os-release
+
+# --- Build-time sanity ------------------------------------------------------
+# Verify the rebrand actually applied so a broken sed fails the build, not the
+# user's first boot.
+RUN grep -q 'Veil OS' /usr/lib/os-release
+
+# NOTE (next milestones, do NOT add here yet):
+#   A-M1  assets/ branding: plymouth, wallpaper, KDE layout presets
+#   A-M2  recipes/modules/ai-stack: ollama, whisper.cpp, piper, embeddings
+#   A-M2  recipes/modules/{nvidia,amd-rocm,intel}: GPU driver layers
+# Keep A-M0 minimal — one variable per milestone.
