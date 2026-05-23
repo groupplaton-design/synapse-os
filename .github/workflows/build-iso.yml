@@ -1,0 +1,79 @@
+name: build-iso
+
+# Heavy pipeline (~20-40 min): turn the veil-base OCI image into a bootable
+# Anaconda installer ISO via bootc-image-builder.
+#
+# Triggers:
+#   - workflow_dispatch  -> click "Run workflow", get the ISO as an artifact
+#   - tag v*             -> also publish the ISO to a GitHub Release
+#
+# Run build-image first so ghcr.io/<owner>/veil-base:latest exists.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/veil-base:latest
+
+jobs:
+  iso:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to publish a Release on tags
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: |
+          # ISO builds need room; strip the runner's preinstalled bloat.
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Pull base image into storage
+        run: sudo podman pull "$IMAGE"
+
+      - name: Build installer ISO
+        run: |
+          mkdir -p output
+          sudo podman run --rm --privileged \
+            --security-opt label=type:unconfined_t \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            -v "$PWD/output:/output" \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type anaconda-iso \
+            --use-librepo=True \
+            "$IMAGE"
+          echo "--- output tree ---"
+          sudo find output -type f -printf '%p  %s bytes\n'
+
+      - name: Checksum
+        run: |
+          ISO=$(sudo find output -name '*.iso' | head -n1)
+          sudo sha256sum "$ISO" | tee output/SHA256SUMS
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: veil-os-iso
+          path: |
+            output/**/*.iso
+            output/SHA256SUMS
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Publish Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            output/**/*.iso
+            output/SHA256SUMS
+          generate_release_notes: true
