@@ -1,8 +1,7 @@
 name: agent-ci
 
 # Track B: build and test the Veil Agent daemon.
-# Gates merges on `cargo build` + `cargo test`; fmt/clippy are advisory for now
-# and will be promoted to hard gates once the baseline is green.
+# Hard gates: build, test, rustfmt, clippy (-D warnings).
 
 on:
   push:
@@ -43,10 +42,8 @@ jobs:
       - name: Test
         run: cargo test --all
 
-      - name: Format (advisory)
+      - name: Format
         run: cargo fmt --all --check
-        continue-on-error: true
 
-      - name: Clippy (advisory)
+      - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
-        continue-on-error: true
