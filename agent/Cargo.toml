@@ -1,0 +1,8 @@
+[workspace]
+resolver = "2"
+members = ["veil-agentd"]
+
+# Future members (per docs/build-plan.md Track B):
+#   mcp-servers/*   built-in MCP servers (files, terminal, browser, ...)
+#   ui              omnibox + tray (Qt/QML bridge)
+#   semantic-search file indexing pipeline

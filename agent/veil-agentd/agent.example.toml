@@ -1,0 +1,9 @@
+# Example veil-agentd config. Copy to /etc/veil/agent.toml to override defaults.
+# Every field is optional — omitted fields fall back to built-in defaults.
+
+# Local API bind address (loopback only; the agent is a local service).
+listen_addr = "127.0.0.1"
+listen_port = 7421
+
+# Log level when RUST_LOG is unset: trace | debug | info | warn | error
+log_level = "info"
