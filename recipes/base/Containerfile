@@ -25,13 +25,21 @@ RUN sed -i \
       'VEIL_VERSION="2026.06.0-alpha"' \
       >> /usr/lib/os-release
 
-# --- Build-time sanity ------------------------------------------------------
-# Verify the rebrand actually applied so a broken sed fails the build, not the
-# user's first boot.
-RUN grep -q 'Veil OS' /usr/lib/os-release
+# --- Branding (A-M1) --------------------------------------------------------
+# All additive: ship our wallpaper package, logo, and a default-wallpaper hint
+# for new users. Nothing here can break boot.
+COPY assets/wallpapers/Veil /usr/share/wallpapers/Veil
+COPY assets/logo.svg /usr/share/pixmaps/veil-logo.svg
+COPY recipes/base/skel/plasma-org.kde.plasma.desktop-appletsrc \
+     /etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc
 
-# NOTE (next milestones, do NOT add here yet):
-#   A-M1  assets/ branding: plymouth, wallpaper, KDE layout presets
-#   A-M2  recipes/modules/ai-stack: ollama, whisper.cpp, piper, embeddings
-#   A-M2  recipes/modules/{nvidia,amd-rocm,intel}: GPU driver layers
-# Keep A-M0 minimal — one variable per milestone.
+# --- Build-time sanity ------------------------------------------------------
+# Verify the rebrand and assets actually applied so a mistake fails the build,
+# not the user's first boot.
+RUN grep -q 'Veil OS' /usr/lib/os-release && \
+    test -f /usr/share/wallpapers/Veil/contents/images/1920x1080.svg
+
+# NOTE (next milestones, do NOT add here):
+#   A-M1  TODO needing a boot test: plymouth theme, SDDM theme, KDE layout
+#         presets (Windows/macOS/power). Additive branding lives above.
+#   A-M2  recipes/modules/ai-stack + GPU layers live in the standard edition.

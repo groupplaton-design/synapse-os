@@ -1,0 +1,10 @@
+{
+  "KPlugin": {
+    "Id": "Veil",
+    "Name": "Veil",
+    "License": "Apache-2.0",
+    "Authors": [
+      { "Name": "Veil OS Project" }
+    ]
+  }
+}
