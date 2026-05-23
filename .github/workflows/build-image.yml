@@ -21,6 +21,8 @@ on:
 env:
   IMAGE_NAME: veil-base
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  # Run JS actions on Node 24 (Node 20 is deprecated from June 2026).
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:

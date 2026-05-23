@@ -23,12 +23,28 @@ agent/
     src/main.rs         # entry point: `run` (daemon) and `chat` (omnibox stub)
     src/lib.rs          # library root
     src/config.rs       # TOML config + defaults (tested)
-    src/server.rs       # axum API: /health, /version, /chat, /tools/fs/read
+    src/server.rs       # axum API: /health /version /chat /agent /tools/fs/read
     src/permissions.rs  # Approver trait + FsPolicy guardrails (tested)
     src/tools.rs        # fs_read tool (tested)
     src/llm.rs          # ChatBackend trait + Ollama backend (tested)
+    src/agent.rs        # agent loop: model calls tools, gated (tested)
     agent.example.toml  # sample config
 ```
+
+### Agent loop (model uses tools)
+
+`/agent` (and the `ask` CLI) run a loop: the model is given the `fs_read` tool,
+may call it, each call passes the **permission gate + FsPolicy**, the result is
+fed back, and the final answer is returned with a log of tool steps.
+
+```
+cargo run -p veil-agentd -- ask "what does ~/Projects/README say?"
+# [tool] fs_read /home/u/Projects/README -> ok
+# <model's answer>
+```
+
+With `require_approval = true` (default) and no UI approver attached yet, tool
+calls are denied and the model is told so — nothing touches files unprompted.
 
 ### Talk to a local model
 

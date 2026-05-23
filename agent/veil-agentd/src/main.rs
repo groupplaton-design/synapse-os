@@ -3,8 +3,11 @@
 
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+use std::sync::Arc;
+use veil_agentd::agent::Agent;
 use veil_agentd::config::Config;
 use veil_agentd::llm::{ChatBackend, OllamaBackend};
+use veil_agentd::permissions::{Approver, AutoApprover, FsPolicy, RequireInteractiveApproval};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -33,6 +36,14 @@ enum Command {
         #[arg(short, long)]
         model: Option<String>,
     },
+    /// Ask the agent (model may call tools, gated by permissions).
+    Ask {
+        /// The prompt (all trailing words are joined).
+        prompt: Vec<String>,
+        /// Override the model; defaults to config `default_model`.
+        #[arg(short, long)]
+        model: Option<String>,
+    },
 }
 
 #[tokio::main]
@@ -54,6 +65,26 @@ async fn main() -> anyhow::Result<()> {
             let model = model.unwrap_or_else(|| config.default_model.clone());
             let answer = backend.generate(&model, &prompt.join(" ")).await?;
             println!("{answer}");
+            Ok(())
+        }
+        Command::Ask { prompt, model } => {
+            let backend = Arc::new(OllamaBackend::new(config.ollama_url.clone()));
+            let fs_policy = Arc::new(FsPolicy {
+                allowed_roots: config.fs_allowed_roots.clone(),
+                max_read_bytes: config.fs_max_read_bytes,
+            });
+            let approver: Arc<dyn Approver> = if config.require_approval {
+                Arc::new(RequireInteractiveApproval)
+            } else {
+                Arc::new(AutoApprover)
+            };
+            let model = model.unwrap_or_else(|| config.default_model.clone());
+            let agent = Agent::new(backend, model, fs_policy, approver);
+            let outcome = agent.run(&prompt.join(" ")).await?;
+            for step in &outcome.steps {
+                eprintln!("[tool] {} {} -> {}", step.tool, step.argument, step.outcome);
+            }
+            println!("{}", outcome.answer);
             Ok(())
         }
     }

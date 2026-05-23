@@ -15,6 +15,10 @@ on:
       - '.github/workflows/agent-ci.yml'
   workflow_dispatch:
 
+env:
+  # Run JS actions on Node 24 (Node 20 is deprecated from June 2026).
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 defaults:
   run:
     working-directory: agent

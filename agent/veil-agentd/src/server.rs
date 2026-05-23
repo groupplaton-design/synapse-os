@@ -12,6 +12,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Instant;
 
+use crate::agent::{Agent, AgentOutcome};
 use crate::config::Config;
 use crate::llm::{ChatBackend, OllamaBackend};
 use crate::permissions::{
@@ -54,6 +55,7 @@ pub fn router(state: AppState) -> Router {
         .route("/health", get(health))
         .route("/version", get(version))
         .route("/chat", post(chat))
+        .route("/agent", post(agent))
         .route("/tools/fs/read", post(tools_fs_read))
         .with_state(state)
 }
@@ -94,6 +96,36 @@ async fn chat(
             Err((
                 StatusCode::BAD_GATEWAY,
                 Json(json!({ "error": "llm_error", "reason": e.to_string() })),
+            ))
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct AgentRequest {
+    prompt: String,
+    #[serde(default)]
+    model: Option<String>,
+}
+
+async fn agent(
+    State(state): State<AppState>,
+    Json(req): Json<AgentRequest>,
+) -> Result<Json<AgentOutcome>, (StatusCode, Json<serde_json::Value>)> {
+    let model = req.model.unwrap_or_else(|| state.default_model.clone());
+    let agent = Agent::new(
+        state.chat.clone(),
+        model,
+        state.fs_policy.clone(),
+        state.approver.clone(),
+    );
+    match agent.run(&req.prompt).await {
+        Ok(outcome) => Ok(Json(outcome)),
+        Err(e) => {
+            tracing::warn!(error = %e, "agent run failed");
+            Err((
+                StatusCode::BAD_GATEWAY,
+                Json(json!({ "error": "agent_error", "reason": e.to_string() })),
             ))
         }
     }

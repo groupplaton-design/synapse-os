@@ -5,6 +5,7 @@
 //! terminal, browser, ...) land in later increments — see
 //! `docs/build-plan.md` Track B.
 
+pub mod agent;
 pub mod config;
 pub mod llm;
 pub mod permissions;
