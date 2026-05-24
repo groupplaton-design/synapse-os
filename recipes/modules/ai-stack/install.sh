@@ -4,11 +4,12 @@
 set -euo pipefail
 
 echo "Installing Ollama into the image..."
-# Stable "latest release" asset on GitHub (the ollama.com/download/ path 404s).
-OLLAMA_URL="https://github.com/ollama/ollama/releases/latest/download/ollama-linux-amd64.tgz"
-curl -fsSL "$OLLAMA_URL" -o /tmp/ollama.tgz
-tar -C /usr -xzf /tmp/ollama.tgz
-rm -f /tmp/ollama.tgz
+# Latest-release asset on GitHub. The asset is a zstd tar named
+# ollama-linux-amd64.tar.zst (the old .tgz name and ollama.com/download 404).
+OLLAMA_URL="https://github.com/ollama/ollama/releases/latest/download/ollama-linux-amd64.tar.zst"
+curl -fsSL "$OLLAMA_URL" -o /tmp/ollama.tar.zst
+tar --zstd -C /usr -xf /tmp/ollama.tar.zst
+rm -f /tmp/ollama.tar.zst
 
 # Create the ollama system user at boot (image-friendly via sysusers.d).
 cat > /usr/lib/sysusers.d/ollama.conf <<'EOF'
