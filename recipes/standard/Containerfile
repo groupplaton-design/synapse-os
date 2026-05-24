@@ -1,17 +1,35 @@
 # Veil OS — standard edition (veil-standard)
 #
-# veil-base + the local AI stack (Ollama systemd service). This is the default
-# desktop edition. For NVIDIA, see recipes/standard-nvidia/.
+# veil-base + local AI stack (Ollama) + Veil Agent. The default desktop edition.
+# For NVIDIA, see recipes/standard-nvidia/.
 
+# --- Stage 1: compile veil-agentd -------------------------------------------
+FROM docker.io/library/rust:1-bookworm AS agent-builder
+# cmake/clang for the rustls crypto provider (aws-lc-rs) build.
+RUN apt-get update && apt-get install -y --no-install-recommends cmake clang \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /src
+COPY agent /src/agent
+RUN cd agent && cargo build --release -p veil-agentd
+
+# --- Stage 2: the image -----------------------------------------------------
 FROM ghcr.io/agent4bnk-spec/veil-base:latest
 
-# --- AI stack (A-M2) --------------------------------------------------------
+# AI stack (Ollama systemd service).
 COPY recipes/modules/ai-stack/install.sh /tmp/ai-stack.sh
 RUN bash /tmp/ai-stack.sh && rm -f /tmp/ai-stack.sh
+
+# Veil Agent: binary + user service (auto-start) + safe default config.
+COPY --from=agent-builder /src/agent/target/release/veil-agentd /usr/bin/veil-agentd
+COPY recipes/modules/veil-agent/veil-agentd.service /usr/lib/systemd/user/veil-agentd.service
+COPY recipes/modules/veil-agent/agent.toml /etc/veil/agent.toml
+RUN systemctl --global enable veil-agentd.service
 
 # Mark the edition.
 RUN sed -i 's/^VEIL_EDITION=.*/VEIL_EDITION="standard"/' /usr/lib/os-release
 
 # --- Build-time sanity ------------------------------------------------------
-RUN command -v ollama && \
-    test -f /usr/lib/systemd/system/ollama.service
+RUN command -v ollama && command -v veil-agentd && \
+    test -f /usr/lib/systemd/system/ollama.service && \
+    test -f /usr/lib/systemd/user/veil-agentd.service && \
+    test -f /etc/veil/agent.toml

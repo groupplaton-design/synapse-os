@@ -1,0 +1,15 @@
+# Default veil-agentd config baked into Veil OS. Safe by default: no filesystem
+# roots permitted and tool actions require approval until the omnibox UI lands.
+
+listen_addr = "127.0.0.1"
+listen_port = 7421
+log_level = "info"
+
+# Locked down: no roots readable, approval required.
+fs_allowed_roots = []
+fs_max_read_bytes = 1048576
+require_approval = true
+
+# Points at the Ollama service baked into the image.
+ollama_url = "http://127.0.0.1:11434"
+default_model = "llama3.2"
