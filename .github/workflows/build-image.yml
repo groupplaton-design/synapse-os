@@ -108,6 +108,13 @@ jobs:
           df -h /
       - id: tags
         run: echo "date=$(date +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
+      # Login BEFORE build: an authenticated token avoids the 403 ghcr returns
+      # for an anonymous bearer-token pull of aurora-nvidia.
+      - uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - id: build
         uses: redhat-actions/buildah-build@v2
         with:
@@ -115,11 +122,6 @@ jobs:
           image: veil-standard-nvidia
           tags: latest ${{ steps.tags.outputs.date }}
           oci: true
-      - uses: redhat-actions/podman-login@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
       - uses: redhat-actions/push-to-registry@v2
         with:
           image: veil-standard-nvidia
