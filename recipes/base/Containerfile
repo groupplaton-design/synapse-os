@@ -11,7 +11,7 @@ FROM ghcr.io/ublue-os/aurora:stable
 
 # --- Rebrand (shared script, also used by the nvidia edition) ---------------
 COPY recipes/modules/rebrand.sh /tmp/rebrand.sh
-RUN /tmp/rebrand.sh && rm -f /tmp/rebrand.sh
+RUN bash /tmp/rebrand.sh && rm -f /tmp/rebrand.sh
 
 # --- Branding (A-M1) --------------------------------------------------------
 # All additive: ship our wallpaper package, logo, and a default-wallpaper hint

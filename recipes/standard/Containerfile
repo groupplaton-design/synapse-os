@@ -7,7 +7,7 @@ FROM ghcr.io/agent4bnk-spec/veil-base:latest
 
 # --- AI stack (A-M2) --------------------------------------------------------
 COPY recipes/modules/ai-stack/install.sh /tmp/ai-stack.sh
-RUN /tmp/ai-stack.sh && rm -f /tmp/ai-stack.sh
+RUN bash /tmp/ai-stack.sh && rm -f /tmp/ai-stack.sh
 
 # Mark the edition.
 RUN sed -i 's/^VEIL_EDITION=.*/VEIL_EDITION="standard"/' /usr/lib/os-release
