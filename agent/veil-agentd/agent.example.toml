@@ -23,3 +23,7 @@ require_approval = true
 # --- Local LLM (Ollama) -----------------------------------------------------
 ollama_url = "http://127.0.0.1:11434"
 default_model = "llama3.2"
+
+# Allow the agent's terminal_exec tool. Off by default; even with approval,
+# arbitrary command execution stays disabled until you opt in.
+enable_terminal = false

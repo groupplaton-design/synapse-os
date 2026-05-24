@@ -85,7 +85,7 @@ async fn main() -> anyhow::Result<()> {
                 Arc::new(AutoApprover)
             };
             let model = model.unwrap_or_else(|| config.default_model.clone());
-            let agent = Agent::new(backend, model, fs_policy, approver);
+            let agent = Agent::new(backend, model, fs_policy, approver, config.enable_terminal);
             let outcome = agent.run(&prompt.join(" ")).await?;
             for step in &outcome.steps {
                 eprintln!("[tool] {} {} -> {}", step.tool, step.argument, step.outcome);

@@ -28,6 +28,9 @@ pub struct Config {
     pub ollama_url: String,
     /// Model used for chat when the request does not name one.
     pub default_model: String,
+    /// Allow the agent's terminal_exec tool. Off by default — even with
+    /// approval, arbitrary command execution stays disabled until opted in.
+    pub enable_terminal: bool,
 }
 
 impl Default for Config {
@@ -41,6 +44,7 @@ impl Default for Config {
             require_approval: true,
             ollama_url: "http://127.0.0.1:11434".to_string(),
             default_model: "llama3.2".to_string(),
+            enable_terminal: false,
         }
     }
 }

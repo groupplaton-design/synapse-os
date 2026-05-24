@@ -13,3 +13,6 @@ require_approval = true
 # Points at the Ollama service baked into the image.
 ollama_url = "http://127.0.0.1:11434"
 default_model = "llama3.2"
+
+# Terminal execution stays off by default (opt in per user).
+enable_terminal = false

@@ -28,6 +28,7 @@ pub struct AppState {
     pub approver: Arc<dyn Approver>,
     pub chat: Arc<dyn ChatBackend>,
     pub default_model: String,
+    pub enable_terminal: bool,
 }
 
 /// Health response body.
@@ -118,6 +119,7 @@ async fn agent(
         model,
         state.fs_policy.clone(),
         state.approver.clone(),
+        state.enable_terminal,
     );
     match agent.run(&req.prompt).await {
         Ok(outcome) => Ok(Json(outcome)),
@@ -197,6 +199,7 @@ pub async fn serve(config: &Config) -> anyhow::Result<()> {
         approver,
         chat,
         default_model: config.default_model.clone(),
+        enable_terminal: config.enable_terminal,
     };
 
     let addr = config.socket_addr();

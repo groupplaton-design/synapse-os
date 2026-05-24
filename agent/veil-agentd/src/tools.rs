@@ -51,6 +51,43 @@ pub fn fs_read(policy: &FsPolicy, requested: &Path) -> Result<FsReadResponse, To
     })
 }
 
+/// Result of running a shell command.
+#[derive(Debug, Serialize)]
+pub struct ExecResponse {
+    pub command: String,
+    pub exit_code: i32,
+    pub stdout: String,
+    pub stderr: String,
+}
+
+/// Run a shell command via `sh -c` and capture its output (each stream capped
+/// at `max_output_bytes`). This is dangerous by design, so callers MUST gate it
+/// behind the approver and the `enable_terminal` switch.
+pub fn terminal_exec(command: &str, max_output_bytes: usize) -> Result<ExecResponse, ToolError> {
+    let output = std::process::Command::new("sh")
+        .arg("-c")
+        .arg(command)
+        .output()
+        .map_err(|e| ToolError::Io(e.to_string()))?;
+
+    let cap = |bytes: &[u8]| -> String {
+        let s = String::from_utf8_lossy(bytes);
+        if s.len() > max_output_bytes {
+            let cut: String = s.chars().take(max_output_bytes).collect();
+            format!("{cut}…[truncated]")
+        } else {
+            s.into_owned()
+        }
+    };
+
+    Ok(ExecResponse {
+        command: command.to_string(),
+        exit_code: output.status.code().unwrap_or(-1),
+        stdout: cap(&output.stdout),
+        stderr: cap(&output.stderr),
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -118,5 +155,18 @@ mod tests {
             fs_read(&policy, &std::env::temp_dir()),
             Err(ToolError::Denied(_))
         ));
+    }
+
+    #[test]
+    fn exec_runs_command() {
+        let r = terminal_exec("echo hello", 4096).unwrap();
+        assert_eq!(r.exit_code, 0);
+        assert!(r.stdout.contains("hello"));
+    }
+
+    #[test]
+    fn exec_reports_exit_code() {
+        let r = terminal_exec("exit 3", 4096).unwrap();
+        assert_eq!(r.exit_code, 3);
     }
 }
