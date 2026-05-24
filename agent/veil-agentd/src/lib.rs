@@ -7,6 +7,7 @@
 
 pub mod agent;
 pub mod config;
+pub mod hardware;
 pub mod llm;
 pub mod permissions;
 pub mod server;

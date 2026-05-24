@@ -44,6 +44,12 @@ enum Command {
         #[arg(short, long)]
         model: Option<String>,
     },
+    /// Detect hardware and recommend a local model (used by first-boot).
+    Recommend {
+        /// Print only the model id (for scripting).
+        #[arg(long)]
+        quiet: bool,
+    },
 }
 
 #[tokio::main]
@@ -85,6 +91,18 @@ async fn main() -> anyhow::Result<()> {
                 eprintln!("[tool] {} {} -> {}", step.tool, step.argument, step.outcome);
             }
             println!("{}", outcome.answer);
+            Ok(())
+        }
+        Command::Recommend { quiet } => {
+            let specs = veil_agentd::hardware::detect();
+            let model = veil_agentd::hardware::recommend_model(&specs);
+            if quiet {
+                println!("{model}");
+            } else {
+                println!("Detected: {} GB RAM, {} GB VRAM", specs.ram_gb, specs.vram_gb);
+                println!("Recommended model: {model}");
+                println!("Pull it with:  ollama pull {model}");
+            }
             Ok(())
         }
     }
