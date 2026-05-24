@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Veil Agent
+GenericName=AI Assistant
+Comment=Ask the local AI agent
+Exec=/usr/bin/veil-omnibox
+Icon=/usr/share/pixmaps/veil-logo.svg
+Terminal=false
+Categories=Utility;
+Keywords=ai;agent;assistant;veil;ask;

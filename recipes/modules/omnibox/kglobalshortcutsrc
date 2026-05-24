@@ -1,0 +1,6 @@
+# Default global shortcut: Meta+A launches the Veil omnibox. Shipped to
+# /etc/skel so new users get it. (Verify on first boot — Plasma shortcut config
+# format can shift between releases.)
+[veil-omnibox.desktop]
+_k_friendly_name=Veil Agent
+_launch=Meta+A\tNone,Launch Veil Agent
