@@ -1,19 +1,34 @@
 # recipes/
 
-bootc / Containerfile recipes for building Veil OS image variants.
+bootc / Containerfile recipes for building Veil OS image editions. GitHub
+Actions (`build-image.yml`) builds these into OCI images on GHCR; the installer
+pipeline (`build-iso.yml`) turns them into bootable ISOs.
 
-This directory will hold the `Containerfile`s that define each Veil OS edition (Lite, Standard, Studio, Server). GitHub Actions builds these into OCI images, which become bootable ISOs via the installer pipeline.
-
-Planned structure:
+## Current structure
 
 ```
 recipes/
-  base/              # Common base on top of Fedora Atomic
-  lite/              # Lite edition Containerfile
-  standard/          # Standard edition (with preinstalled local LLM stack)
-  studio/            # Studio edition (full creator AI stack)
-  server/            # Server / Hub edition (headless)
-  modules/           # Reusable layer pieces (nvidia, amd-rocm, intel-arc, ai-stack, kde-plasma, etc.)
+  base/              # veil-base: Aurora + rebrand + branding
+  standard/          # veil-standard: base + AI stack (Ollama)
+  standard-nvidia/   # veil-standard-nvidia: aurora-nvidia + rebrand + branding + AI stack
+  modules/
+    rebrand.sh       # os-release -> Veil OS (shared)
+    ai-stack/        # Ollama systemd service install
 ```
 
-Files will arrive in Phase 1 of the roadmap.
+## Build graph
+
+```
+aurora:stable        ─► base ─► standard
+aurora-nvidia:stable ─────────► standard-nvidia
+```
+
+`standard` builds `FROM` the pushed `veil-base` (dependent CI job).
+`standard-nvidia` builds `FROM` upstream `aurora-nvidia` directly (it can't use
+the non-NVIDIA `veil-base`), reusing the same rebrand/branding/AI-stack pieces.
+NVIDIA is built only on `workflow_dispatch` or a release tag (large base).
+
+## Planned editions (later)
+
+`lite` (minimal), `studio` (full creator AI stack), `server` (headless Hub).
+The AI stack will also grow whisper.cpp / piper / embeddings beyond Ollama.

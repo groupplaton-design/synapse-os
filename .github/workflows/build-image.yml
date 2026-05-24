@@ -1,68 +1,119 @@
 name: build-image
 
-# A-M0 pipeline: build the Veil OS base OCI image and push it to GHCR.
-# Builds run on GitHub's runners — no local Linux required to get an image.
+# Builds the Veil OS image editions on GitHub runners and pushes to GHCR.
+#   base            = Aurora + rebrand + branding
+#   standard        = base + AI stack (Ollama)
+#   standard-nvidia = aurora-nvidia + rebrand + branding + AI stack
+# No local Linux required.
 
 on:
   push:
     branches: [main]
     paths:
       - 'recipes/**'
+      - 'assets/**'
       - '.github/workflows/build-image.yml'
   pull_request:
     paths:
       - 'recipes/**'
+      - 'assets/**'
       - '.github/workflows/build-image.yml'
   workflow_dispatch:
   schedule:
-    # Weekly rebuild to pull in upstream Aurora/Fedora security updates
+    # Weekly rebuild to pull in upstream Aurora/Fedora security updates.
     - cron: '0 6 * * 1'
 
 env:
-  IMAGE_NAME: veil-base
-  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
-  # Run JS actions on Node 24 (Node 20 is deprecated from June 2026).
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  build:
+  base:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Generate date tag
-        id: tags
+      - uses: actions/checkout@v4
+      - id: tags
         run: echo "date=$(date +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
-
-      - name: Build image
-        id: build
+      - id: build
         uses: redhat-actions/buildah-build@v2
         with:
           containerfiles: ./recipes/base/Containerfile
-          image: ${{ env.IMAGE_NAME }}
+          image: veil-base
           tags: latest ${{ steps.tags.outputs.date }}
           oci: true
-
-      # Push only on real pushes to main / manual / schedule — never on PRs.
-      - name: Log in to GHCR
-        if: github.event_name != 'pull_request'
+      - if: github.event_name != 'pull_request'
         uses: redhat-actions/podman-login@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push to GHCR
-        if: github.event_name != 'pull_request'
+      - if: github.event_name != 'pull_request'
         uses: redhat-actions/push-to-registry@v2
         with:
-          image: ${{ env.IMAGE_NAME }}
+          image: veil-base
           tags: latest ${{ steps.tags.outputs.date }}
-          registry: ${{ env.IMAGE_REGISTRY }}
+          registry: ${{ env.REGISTRY }}
 
-      # TODO (A-M5 / Phase 1): sign pushed images with cosign once the signing
-      # key ceremony is done and COSIGN_PRIVATE_KEY is in repo secrets.
+  standard:
+    needs: base
+    # Skipped on PRs: it builds FROM the private veil-base, which only exists
+    # after the base job pushes it.
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - id: tags
+        run: echo "date=$(date +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
+      # Login BEFORE build so buildah can pull the private veil-base FROM image.
+      - uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: build
+        uses: redhat-actions/buildah-build@v2
+        with:
+          containerfiles: ./recipes/standard/Containerfile
+          image: veil-standard
+          tags: latest ${{ steps.tags.outputs.date }}
+          oci: true
+      - uses: redhat-actions/push-to-registry@v2
+        with:
+          image: veil-standard
+          tags: latest ${{ steps.tags.outputs.date }}
+          registry: ${{ env.REGISTRY }}
+
+  standard-nvidia:
+    # NVIDIA base is large; only build it on demand or for a release tag.
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - id: tags
+        run: echo "date=$(date +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
+      - id: build
+        uses: redhat-actions/buildah-build@v2
+        with:
+          containerfiles: ./recipes/standard-nvidia/Containerfile
+          image: veil-standard-nvidia
+          tags: latest ${{ steps.tags.outputs.date }}
+          oci: true
+      - uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: redhat-actions/push-to-registry@v2
+        with:
+          image: veil-standard-nvidia
+          tags: latest ${{ steps.tags.outputs.date }}
+          registry: ${{ env.REGISTRY }}

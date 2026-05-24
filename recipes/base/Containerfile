@@ -1,29 +1,17 @@
-# Veil OS — base image (milestone A-M0)
+# Veil OS — base image (veil-base)
 #
 # We build ON TOP of Fedora Atomic, we do not rebuild Fedora. The base is
 # Universal Blue "Aurora" (KDE Plasma, built from Fedora Kinoite) which already
-# solves NVIDIA/AMD drivers and codecs for us. See recipes/base/README.md for
-# the why.
+# solves NVIDIA/AMD drivers and codecs for us. See recipes/base/README.md.
 #
-# A-M0 scope: REBRAND ONLY. No functional packages yet — the goal of this
-# milestone is a signed, installable image that boots to a "Veil OS" identity
-# and proves the whole CI -> GHCR -> ISO pipeline works end to end.
+# veil-base = Aurora + Veil rebrand + branding assets. The standard edition
+# layers the AI stack on top of this.
 
 FROM ghcr.io/ublue-os/aurora:stable
 
-# --- Rebrand os-release (what shows in About / login / neofetch) ------------
-# Conservative: we keep ID/ID_LIKE so Fedora/ublue tooling and package managers
-# keep working. We only change the human-facing names and add VEIL_* markers.
-RUN sed -i \
-      -e 's/^NAME=.*/NAME="Veil OS"/' \
-      -e 's/^PRETTY_NAME=.*/PRETTY_NAME="Veil OS (alpha)"/' \
-      -e 's/^VARIANT=.*/VARIANT="Veil OS Base"/' \
-      -e 's/^VARIANT_ID=.*/VARIANT_ID=veil-base/' \
-      /usr/lib/os-release && \
-    printf '%s\n' \
-      'VEIL_EDITION="base"' \
-      'VEIL_VERSION="2026.06.0-alpha"' \
-      >> /usr/lib/os-release
+# --- Rebrand (shared script, also used by the nvidia edition) ---------------
+COPY recipes/modules/rebrand.sh /tmp/rebrand.sh
+RUN /tmp/rebrand.sh && rm -f /tmp/rebrand.sh
 
 # --- Branding (A-M1) --------------------------------------------------------
 # All additive: ship our wallpaper package, logo, and a default-wallpaper hint
@@ -34,12 +22,8 @@ COPY recipes/base/skel/plasma-org.kde.plasma.desktop-appletsrc \
      /etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc
 
 # --- Build-time sanity ------------------------------------------------------
-# Verify the rebrand and assets actually applied so a mistake fails the build,
-# not the user's first boot.
 RUN grep -q 'Veil OS' /usr/lib/os-release && \
     test -f /usr/share/wallpapers/Veil/contents/images/1920x1080.svg
 
-# NOTE (next milestones, do NOT add here):
-#   A-M1  TODO needing a boot test: plymouth theme, SDDM theme, KDE layout
-#         presets (Windows/macOS/power). Additive branding lives above.
-#   A-M2  recipes/modules/ai-stack + GPU layers live in the standard edition.
+# NOTE: plymouth/SDDM themes and KDE layout presets need a boot test before
+# wiring (see assets/README.md).

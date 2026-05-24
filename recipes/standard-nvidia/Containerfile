@@ -1,0 +1,26 @@
+# Veil OS — standard edition, NVIDIA (veil-standard-nvidia)
+#
+# Same as standard, but FROM Universal Blue's aurora-nvidia (proprietary NVIDIA
+# driver pre-integrated). It cannot FROM veil-base (that's the non-NVIDIA
+# branch), so it re-applies the shared rebrand + branding + AI stack.
+
+FROM ghcr.io/ublue-os/aurora-nvidia:stable
+
+# --- Rebrand + branding (same scripts/assets as veil-base) ------------------
+COPY recipes/modules/rebrand.sh /tmp/rebrand.sh
+RUN /tmp/rebrand.sh && rm -f /tmp/rebrand.sh
+
+COPY assets/wallpapers/Veil /usr/share/wallpapers/Veil
+COPY assets/logo.svg /usr/share/pixmaps/veil-logo.svg
+COPY recipes/base/skel/plasma-org.kde.plasma.desktop-appletsrc \
+     /etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc
+
+# --- AI stack ---------------------------------------------------------------
+COPY recipes/modules/ai-stack/install.sh /tmp/ai-stack.sh
+RUN /tmp/ai-stack.sh && rm -f /tmp/ai-stack.sh
+
+RUN sed -i 's/^VEIL_EDITION=.*/VEIL_EDITION="standard-nvidia"/' /usr/lib/os-release
+
+# --- Build-time sanity ------------------------------------------------------
+RUN grep -q 'Veil OS' /usr/lib/os-release && \
+    command -v ollama
