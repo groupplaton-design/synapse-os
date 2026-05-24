@@ -1,8 +1,8 @@
 name: build-iso
 
-# Heavy pipeline (~20-40 min): turn the veil-base OCI image into a bootable
+# Heavy pipeline (~25-45 min): turn a Veil OS edition image into a bootable
 # Anaconda installer ISO via bootc-image-builder, uploaded as a workflow
-# artifact (~4.5 GB).
+# artifact (standard edition is ~5-6 GB).
 #
 # NOTE: the ISO is NOT published to GitHub Releases — release assets are capped
 # at 2 GiB and our ISO is larger. Permanent hosting will move to object storage
@@ -10,9 +10,9 @@ name: build-iso
 # Artifacts. See iso/README.md.
 #
 # Triggers:
-#   - workflow_dispatch  -> click "Run workflow"
-#   - tag v*             -> tagged build
-# Run build-image first so ghcr.io/<owner>/veil-base:latest exists.
+#   - workflow_dispatch  -> pick an edition
+#   - tag v*             -> standard edition
+# Run build-image first so the edition image exists in GHCR.
 
 on:
   workflow_dispatch:
@@ -33,6 +33,8 @@ env:
   # Default to the full standard edition (AI stack + agent); dispatch can pick
   # another. Tag builds fall back to standard.
   IMAGE: ghcr.io/${{ github.repository_owner }}/veil-${{ github.event.inputs.edition || 'standard' }}:latest
+  # Write the (large) ISO to the runner's roomy ephemeral disk, not the small /.
+  OUT: /mnt/veil-output
   # Run JS actions on Node 24 (Node 20 is deprecated from June 2026).
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -48,47 +50,48 @@ jobs:
 
       - name: Free up disk space
         run: |
-          # ISO builds need room; strip the runner's preinstalled bloat.
-          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
-          df -h /
+          # Strip the runner's preinstalled bloat so the build tree fits on /.
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android \
+            /opt/hostedtoolcache /usr/local/share/boost /usr/lib/jvm \
+            /usr/local/lib/node_modules
+          sudo docker image prune -af || true
+          df -h / /mnt
 
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-      - name: Pull base image into storage
+      - name: Pull edition image into storage
         run: sudo podman pull "$IMAGE"
 
       - name: Build installer ISO
         run: |
-          mkdir -p output
+          sudo mkdir -p "$OUT"
           sudo podman run --rm --privileged \
             --security-opt label=type:unconfined_t \
             -v /var/lib/containers/storage:/var/lib/containers/storage \
-            -v "$PWD/output:/output" \
+            -v "$OUT:/output" \
             quay.io/centos-bootc/bootc-image-builder:latest \
             --type anaconda-iso \
             --rootfs btrfs \
             --use-librepo=True \
             "$IMAGE"
           echo "--- output tree ---"
-          sudo find output -type f -printf '%p  %s bytes\n'
+          sudo find "$OUT" -type f -printf '%p  %s bytes\n'
 
       - name: Fix output ownership
-        # bootc-image-builder writes the ISO as root; later steps run as the
-        # runner user and otherwise cannot read it.
-        run: sudo chown -R "$(id -u):$(id -g)" output
+        run: sudo chown -R "$(id -u):$(id -g)" "$OUT"
 
       - name: Checksum
         run: |
-          ISO=$(sudo find output -name '*.iso' | head -n1)
-          sudo sha256sum "$ISO" | tee output/SHA256SUMS
+          ISO=$(find "$OUT" -name '*.iso' | head -n1)
+          sha256sum "$ISO" | tee "$OUT/SHA256SUMS"
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
           name: veil-os-iso
           path: |
-            output/**/*.iso
-            output/SHA256SUMS
+            ${{ env.OUT }}/**/*.iso
+            ${{ env.OUT }}/SHA256SUMS
           retention-days: 90
           if-no-files-found: error
