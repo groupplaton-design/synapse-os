@@ -16,7 +16,7 @@ use crate::agent::{Agent, AgentOutcome};
 use crate::config::Config;
 use crate::llm::{ChatBackend, OllamaBackend};
 use crate::permissions::{
-    Approver, AutoApprover, Decision, FsPolicy, PermissionRequest, RequireInteractiveApproval,
+    Approver, AutoApprover, Decision, FsPolicy, InteractiveApprover, PermissionRequest,
 };
 use crate::tools::{fs_read, FsReadResponse, ToolError};
 
@@ -186,7 +186,7 @@ pub async fn serve(config: &Config) -> anyhow::Result<()> {
         max_read_bytes: config.fs_max_read_bytes,
     });
     let approver: Arc<dyn Approver> = if config.require_approval {
-        Arc::new(RequireInteractiveApproval)
+        Arc::new(InteractiveApprover)
     } else {
         Arc::new(AutoApprover)
     };

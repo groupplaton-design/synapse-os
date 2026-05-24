@@ -49,6 +49,42 @@ impl Approver for AutoApprover {
     }
 }
 
+/// The live approval path: ask the user via a GUI dialog (kdialog, then
+/// zenity). Denies if the user declines or no GUI helper is available. Used by
+/// the daemon when `require_approval` is on — this is what makes the omnibox
+/// permission prompt real.
+pub struct InteractiveApprover;
+
+impl Approver for InteractiveApprover {
+    fn decide(&self, request: &PermissionRequest) -> Decision {
+        let prompt = format!(
+            "Veil Agent wants to {} {}.\n\nAllow this?",
+            request.action, request.resource
+        );
+        match gui_confirm(&prompt) {
+            Some(true) => Decision::Allow,
+            Some(false) => Decision::Deny("user declined".to_string()),
+            None => Decision::Deny("no GUI prompt available".to_string()),
+        }
+    }
+}
+
+/// Ask a yes/no question through whatever GUI dialog tool is present.
+/// `Some(true/false)` = user answered; `None` = no dialog tool found.
+fn gui_confirm(prompt: &str) -> Option<bool> {
+    let candidates: [(&str, Vec<&str>); 2] = [
+        ("kdialog", vec!["--warningyesno", prompt]),
+        ("zenity", vec!["--question", "--text", prompt]),
+    ];
+    for (bin, args) in candidates {
+        // Ok = the tool ran (exit 0 = yes); Err = the tool is not installed.
+        if let Ok(status) = std::process::Command::new(bin).args(&args).status() {
+            return Some(status.success());
+        }
+    }
+    None
+}
+
 /// Reason a filesystem access was refused by policy.
 #[derive(Debug)]
 pub struct Denied {

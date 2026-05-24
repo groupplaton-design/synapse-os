@@ -7,7 +7,7 @@ use std::sync::Arc;
 use veil_agentd::agent::Agent;
 use veil_agentd::config::Config;
 use veil_agentd::llm::{ChatBackend, OllamaBackend};
-use veil_agentd::permissions::{Approver, AutoApprover, FsPolicy, RequireInteractiveApproval};
+use veil_agentd::permissions::{Approver, AutoApprover, FsPolicy, InteractiveApprover};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -80,7 +80,7 @@ async fn main() -> anyhow::Result<()> {
                 max_read_bytes: config.fs_max_read_bytes,
             });
             let approver: Arc<dyn Approver> = if config.require_approval {
-                Arc::new(RequireInteractiveApproval)
+                Arc::new(InteractiveApprover)
             } else {
                 Arc::new(AutoApprover)
             };
