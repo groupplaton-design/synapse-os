@@ -4,7 +4,9 @@
 set -euo pipefail
 
 echo "Installing Ollama into the image..."
-curl -fsSL https://ollama.com/download/ollama-linux-amd64.tgz -o /tmp/ollama.tgz
+# Stable "latest release" asset on GitHub (the ollama.com/download/ path 404s).
+OLLAMA_URL="https://github.com/ollama/ollama/releases/latest/download/ollama-linux-amd64.tgz"
+curl -fsSL "$OLLAMA_URL" -o /tmp/ollama.tgz
 tar -C /usr -xzf /tmp/ollama.tgz
 rm -f /tmp/ollama.tgz
 

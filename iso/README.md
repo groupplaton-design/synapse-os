@@ -1,22 +1,30 @@
 # iso/
 
-ISO build scripts and release artifacts.
+ISO build is driven by `.github/workflows/build-iso.yml`, which wraps
+`bootc-image-builder` to turn the `veil-base` OCI image into a bootable Anaconda
+installer ISO.
 
-This directory will hold:
+## How to get an ISO
 
-- Build scripts that wrap `bootc-image-builder` / `osbuild-composer` to turn an OCI image (from `recipes/`) into a bootable ISO
-- Release notes and changelogs per ISO
-- Signature / checksum files
+1. GitHub → **Actions** → **build-iso** → **Run workflow** (or push a `v*` tag).
+2. When it finishes (~20–40 min), download the **`veil-os-iso`** artifact from
+   that run. It contains `install.iso` + `SHA256SUMS`. Retention: 90 days.
 
-ISO outputs are **not committed to git** (see `.gitignore`). They are produced by CI and uploaded to a release server / S3 bucket.
+## Why not GitHub Releases
 
-Planned structure:
+The ISO is ~4.5 GB. GitHub **release assets are capped at 2 GiB**, so the ISO
+cannot be attached to a Release. Permanent, public hosting will move to object
+storage (Cloudflare R2 / S3) when there is a public alpha; until then the
+workflow artifact is the download channel.
 
-```
-iso/
-  build.sh           # Wrapper script
-  install-config/    # Anaconda kickstart-style configs
-  releases/          # Release notes per version
-```
+## Installing (reminder)
 
-Files will arrive in Phase 1 of the roadmap.
+The installer **wipes the target disk** — it is a full OS, not an app. Test in a
+VM first, then install on a spare laptop / second disk / external USB SSD. Never
+on your only working machine.
+
+## Later
+
+- Per-edition ISOs (standard with the AI stack, not just base).
+- Kickstart/install-config presets.
+- Object-storage upload + a downloads page.

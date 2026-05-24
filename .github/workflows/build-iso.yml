@@ -1,12 +1,17 @@
 name: build-iso
 
 # Heavy pipeline (~20-40 min): turn the veil-base OCI image into a bootable
-# Anaconda installer ISO via bootc-image-builder.
+# Anaconda installer ISO via bootc-image-builder, uploaded as a workflow
+# artifact (~4.5 GB).
+#
+# NOTE: the ISO is NOT published to GitHub Releases — release assets are capped
+# at 2 GiB and our ISO is larger. Permanent hosting will move to object storage
+# (R2/S3) when there is a public alpha. For now: download from the run's
+# Artifacts. See iso/README.md.
 #
 # Triggers:
-#   - workflow_dispatch  -> click "Run workflow", get the ISO as an artifact
-#   - tag v*             -> also publish the ISO to a GitHub Release
-#
+#   - workflow_dispatch  -> click "Run workflow"
+#   - tag v*             -> tagged build
 # Run build-image first so ghcr.io/<owner>/veil-base:latest exists.
 
 on:
@@ -24,7 +29,7 @@ jobs:
   iso:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # needed to publish a Release on tags
+      contents: read
       packages: read
     steps:
       - name: Checkout
@@ -59,8 +64,7 @@ jobs:
 
       - name: Fix output ownership
         # bootc-image-builder writes the ISO as root; later steps run as the
-        # runner user and otherwise cannot read it (so it never reaches the
-        # artifact / release).
+        # runner user and otherwise cannot read it.
         run: sudo chown -R "$(id -u):$(id -g)" output
 
       - name: Checksum
@@ -75,14 +79,5 @@ jobs:
           path: |
             output/**/*.iso
             output/SHA256SUMS
-          retention-days: 7
+          retention-days: 90
           if-no-files-found: error
-
-      - name: Publish Release (tags only)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            output/**/*.iso
-            output/SHA256SUMS
-          generate_release_notes: true
