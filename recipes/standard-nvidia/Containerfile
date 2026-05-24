@@ -5,11 +5,20 @@
 # open variant deliberately — it is freely redistributable (the proprietary
 # aurora-nvidia image is access-gated) and fits our open-source positioning.
 # It cannot FROM veil-base (that's the non-NVIDIA branch), so it re-applies the
-# shared rebrand + branding + AI stack.
+# shared rebrand + branding + AI stack + agent.
 
+# --- Stage 1: compile veil-agentd -------------------------------------------
+FROM docker.io/library/rust:1-bookworm AS agent-builder
+RUN apt-get update && apt-get install -y --no-install-recommends cmake clang \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /src
+COPY agent /src/agent
+RUN cd agent && cargo build --release -p veil-agentd
+
+# --- Stage 2: the image -----------------------------------------------------
 FROM ghcr.io/ublue-os/aurora-nvidia-open:stable
 
-# --- Rebrand + branding (same scripts/assets as veil-base) ------------------
+# Rebrand + branding (same scripts/assets as veil-base).
 COPY recipes/modules/rebrand.sh /tmp/rebrand.sh
 RUN bash /tmp/rebrand.sh && rm -f /tmp/rebrand.sh
 
@@ -18,12 +27,20 @@ COPY assets/logo.svg /usr/share/pixmaps/veil-logo.svg
 COPY recipes/base/skel/plasma-org.kde.plasma.desktop-appletsrc \
      /etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc
 
-# --- AI stack ---------------------------------------------------------------
+# AI stack (Ollama systemd service).
 COPY recipes/modules/ai-stack/install.sh /tmp/ai-stack.sh
 RUN bash /tmp/ai-stack.sh && rm -f /tmp/ai-stack.sh
+
+# Veil Agent: binary + user service (auto-start) + safe default config.
+COPY --from=agent-builder /src/agent/target/release/veil-agentd /usr/bin/veil-agentd
+COPY recipes/modules/veil-agent/veil-agentd.service /usr/lib/systemd/user/veil-agentd.service
+COPY recipes/modules/veil-agent/agent.toml /etc/veil/agent.toml
+RUN systemctl --global enable veil-agentd.service
 
 RUN sed -i 's/^VEIL_EDITION=.*/VEIL_EDITION="standard-nvidia"/' /usr/lib/os-release
 
 # --- Build-time sanity ------------------------------------------------------
 RUN grep -q 'Veil OS' /usr/lib/os-release && \
-    command -v ollama
+    command -v ollama && command -v veil-agentd && \
+    test -f /usr/lib/systemd/user/veil-agentd.service && \
+    test -f /etc/veil/agent.toml
