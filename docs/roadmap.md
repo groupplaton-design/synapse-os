@@ -4,6 +4,32 @@ High-level phases. Detailed sprint planning will live in GitHub Issues / Project
 
 ---
 
+## Progress snapshot — 2026-05
+
+Most of **Phase 1's build pipeline is done** and green in CI. What exists:
+
+- **Image pipeline**: `veil-base`, `veil-standard`, `veil-standard-nvidia`
+  build on GitHub Actions → GHCR; installer ISO via `bootc-image-builder`
+  (base ~4.7 GiB, standard ~6.7 GiB, artifact). See `docs/build-plan.md`.
+- **Base**: Universal Blue Aurora (KDE/Fedora Atomic); NVIDIA via the
+  open-kernel-module `aurora-nvidia-open`.
+- **AI stack in the OS**: Ollama as a loopback systemd service.
+- **Veil Agent (`veil-agentd`)**: Rust daemon baked into the image (systemd
+  user service) — `/health`, `/version`, `/chat`, `/agent`, `/tools/fs/read`;
+  tools `fs_read` + `terminal_exec`; agent loop with permission gating.
+- **Permissions**: interactive approver (kdialog/zenity) — tool use prompts
+  the user; locked-down defaults (no fs roots, terminal off, approval on).
+- **Omnibox**: kdialog prompt → `/agent`, launcher + Meta+A shortcut.
+- **First-boot (A-M3)**: hardware detection → model recommendation →
+  auto-pull a model sized to the machine.
+- **Branding**: SVG logo + wallpaper package + default wallpaper.
+
+Not yet (needs a boot test or later phase): GUI first-boot wizard, plymouth/
+SDDM themes, KDE layout presets, LUKS duress features, WayDroid/Bottles
+wiring, public ISO hosting, docs site, closed alpha.
+
+---
+
 ## Phase 0 — Foundation (Month 0-1)
 
 **Goal:** legal, branding, and decision-making infrastructure in place before any code is written.
@@ -23,14 +49,14 @@ High-level phases. Detailed sprint planning will live in GitHub Issues / Project
 
 **Goal:** working ISO that boots, runs Veil Agent v0.1, ships to a closed alpha of ~50-200 users.
 
-- [ ] Fork Universal Blue / Bazzite as base
-- [ ] Containerfile recipe in `recipes/` — KDE Plasma 6 + AI stack preinstalled
-- [ ] GitHub Actions pipeline: Containerfile → OCI image → installer ISO
-- [ ] First-boot wizard (layout picker, hardware benchmark, model recommendation)
-- [ ] Veil Agent v0.1 — MCP server in Rust or Go, omnibox UI, local Ollama integration
-- [ ] Veil Models v0.1 — hardware-aware model installer
+- [x] Fork Universal Blue as base (Aurora KDE)
+- [x] Containerfile recipes in `recipes/` — base + standard editions
+- [x] GitHub Actions pipeline: Containerfile → OCI image → installer ISO
+- [~] First-boot setup — hardware detection + model recommendation + auto-pull done; GUI layout picker pending
+- [x] Veil Agent v0.1 — Rust daemon, omnibox, local Ollama, agent loop with tools
+- [x] Veil Models v0.1 — hardware-aware model recommendation + first-boot pull
 - [ ] LUKS2 default with anti-coercion features (duress password v1)
-- [ ] Driver bundle: NVIDIA + AMD + Intel Arc + NPU (Intel + AMD XDNA)
+- [~] Driver bundle: NVIDIA (open) + AMD + Intel via Aurora base; NPU pending
 - [ ] Compatibility layer: Bottles + Steam/Proton + WayDroid preinstalled
 - [ ] Documentation site (`docs.veilos.com`)
 - [ ] Discord / Matrix community

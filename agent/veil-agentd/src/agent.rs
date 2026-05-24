@@ -79,8 +79,9 @@ impl Agent {
                 kind: "function".to_string(),
                 function: FunctionDef {
                     name: "terminal_exec".to_string(),
-                    description: "Run a shell command and return its output. Requires user approval."
-                        .to_string(),
+                    description:
+                        "Run a shell command and return its output. Requires user approval."
+                            .to_string(),
                     parameters: serde_json::json!({
                         "type": "object",
                         "properties": {
@@ -313,7 +314,13 @@ mod tests {
             allowed_roots: vec![root],
             max_read_bytes: 1024,
         });
-        let agent = Agent::new(backend, "test".to_string(), policy, Arc::new(AutoApprover), false);
+        let agent = Agent::new(
+            backend,
+            "test".to_string(),
+            policy,
+            Arc::new(AutoApprover),
+            false,
+        );
 
         let outcome = agent.run("what is the secret?").await.unwrap();
         assert_eq!(outcome.steps.len(), 1);
