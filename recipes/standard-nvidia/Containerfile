@@ -1,10 +1,13 @@
 # Veil OS — standard edition, NVIDIA (veil-standard-nvidia)
 #
-# Same as standard, but FROM Universal Blue's aurora-nvidia (proprietary NVIDIA
-# driver pre-integrated). It cannot FROM veil-base (that's the non-NVIDIA
-# branch), so it re-applies the shared rebrand + branding + AI stack.
+# Same as standard, but FROM Universal Blue's aurora-nvidia-OPEN: NVIDIA's
+# open-source GPU kernel modules (Turing / RTX 20-series and newer). We use the
+# open variant deliberately — it is freely redistributable (the proprietary
+# aurora-nvidia image is access-gated) and fits our open-source positioning.
+# It cannot FROM veil-base (that's the non-NVIDIA branch), so it re-applies the
+# shared rebrand + branding + AI stack.
 
-FROM ghcr.io/ublue-os/aurora-nvidia:stable
+FROM ghcr.io/ublue-os/aurora-nvidia-open:stable
 
 # --- Rebrand + branding (same scripts/assets as veil-base) ------------------
 COPY recipes/modules/rebrand.sh /tmp/rebrand.sh

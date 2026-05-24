@@ -19,9 +19,12 @@ recipes/
 ## Build graph
 
 ```
-aurora:stable        ─► base ─► standard
-aurora-nvidia:stable ─────────► standard-nvidia
+aurora:stable             ─► base ─► standard
+aurora-nvidia-open:stable ─────────► standard-nvidia
 ```
+
+NVIDIA uses the **open** kernel-module image (`aurora-nvidia-open`, Turing/RTX
+20-series+) — freely redistributable, unlike the access-gated proprietary one.
 
 `standard` builds `FROM` the pushed `veil-base` (dependent CI job).
 `standard-nvidia` builds `FROM` upstream `aurora-nvidia` directly (it can't use
