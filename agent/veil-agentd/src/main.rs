@@ -99,7 +99,10 @@ async fn main() -> anyhow::Result<()> {
             if quiet {
                 println!("{model}");
             } else {
-                println!("Detected: {} GB RAM, {} GB VRAM", specs.ram_gb, specs.vram_gb);
+                println!(
+                    "Detected: {} GB RAM, {} GB VRAM",
+                    specs.ram_gb, specs.vram_gb
+                );
                 println!("Recommended model: {model}");
                 println!("Pull it with:  ollama pull {model}");
             }

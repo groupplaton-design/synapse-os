@@ -16,12 +16,23 @@ name: build-iso
 
 on:
   workflow_dispatch:
+    inputs:
+      edition:
+        description: 'Edition to build the ISO for'
+        type: choice
+        options:
+          - standard
+          - base
+          - standard-nvidia
+        default: standard
   push:
     tags:
       - 'v*'
 
 env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/veil-base:latest
+  # Default to the full standard edition (AI stack + agent); dispatch can pick
+  # another. Tag builds fall back to standard.
+  IMAGE: ghcr.io/${{ github.repository_owner }}/veil-${{ github.event.inputs.edition || 'standard' }}:latest
   # Run JS actions on Node 24 (Node 20 is deprecated from June 2026).
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 

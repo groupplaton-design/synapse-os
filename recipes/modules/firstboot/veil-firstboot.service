@@ -1,0 +1,10 @@
+[Unit]
+Description=Veil OS first-boot setup (recommend + pull a local model)
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/veil-firstboot
+
+[Install]
+WantedBy=default.target

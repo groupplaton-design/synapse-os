@@ -37,10 +37,16 @@ COPY recipes/modules/veil-agent/veil-agentd.service /usr/lib/systemd/user/veil-a
 COPY recipes/modules/veil-agent/agent.toml /etc/veil/agent.toml
 RUN systemctl --global enable veil-agentd.service
 
+# First-boot setup (A-M3): recommend + pull a model sized to the machine.
+COPY recipes/modules/firstboot/veil-firstboot.sh /usr/bin/veil-firstboot
+COPY recipes/modules/firstboot/veil-firstboot.service /usr/lib/systemd/user/veil-firstboot.service
+RUN chmod +x /usr/bin/veil-firstboot && systemctl --global enable veil-firstboot.service
+
 RUN sed -i 's/^VEIL_EDITION=.*/VEIL_EDITION="standard-nvidia"/' /usr/lib/os-release
 
 # --- Build-time sanity ------------------------------------------------------
 RUN grep -q 'Veil OS' /usr/lib/os-release && \
     command -v ollama && command -v veil-agentd && \
     test -f /usr/lib/systemd/user/veil-agentd.service && \
+    test -x /usr/bin/veil-firstboot && \
     test -f /etc/veil/agent.toml
