@@ -68,6 +68,10 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+          df -h /
       - id: tags
         run: echo "date=$(date +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
       # Login BEFORE build so buildah can pull the private veil-base FROM image.
@@ -98,6 +102,10 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL
+          df -h /
       - id: tags
         run: echo "date=$(date +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
       - id: build
