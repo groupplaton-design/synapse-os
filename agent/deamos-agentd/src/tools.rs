@@ -115,7 +115,7 @@ mod tests {
         };
         let resp = fs_read(&policy, &f).unwrap();
         assert_eq!(resp.content, "hello deamos");
-        assert_eq!(resp.bytes, 10);
+        assert_eq!(resp.bytes, 12);
     }
 
     #[test]
