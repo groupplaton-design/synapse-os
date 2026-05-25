@@ -1,6 +1,6 @@
-# Veil OS — Compatibility Matrix
+# DeamOS — Compatibility Matrix
 
-What runs on Veil OS, what doesn't, and what we plan to do about the gaps.
+What runs on DeamOS, what doesn't, and what we plan to do about the gaps.
 
 ---
 
@@ -57,7 +57,7 @@ What runs on Veil OS, what doesn't, and what we plan to do about the gaps.
 
 ## Mobile / tablet compatibility
 
-| Device class | Veil OS installable? | Veil Companion app? |
+| Device class | DeamOS installable? | Deamos Companion app? |
 |---|---|---|
 | Microsoft Surface (Pro / Go / Laptop) | **Yes, Day 1** | — |
 | Framework Laptop 13 / 16 | **Yes, Day 1** | — |
@@ -79,5 +79,5 @@ What runs on Veil OS, what doesn't, and what we plan to do about the gaps.
 | Competitive shooters with kernel anti-cheat | Not our market. Document the limitation honestly. |
 | Netflix 4K / Apple TV+ 4K | DRM is the issue. Document, no fix possible from our side. |
 | macOS-only apps (Final Cut, Logic Pro, etc.) | Recommend Linux alternatives (Kdenlive / DaVinci, Ardour / Reaper). Not our market. |
-| iOS / iPad | Not our market. Offer **Veil Companion iOS app** for those who want some Veil functionality on Apple devices. |
+| iOS / iPad | Not our market. Offer **Deamos Companion iOS app** for those who want some Deamos functionality on Apple devices. |
 | Random new Wi-Fi chips | Maintain a hardware compatibility wiki. Detect at install, warn before commit. |

@@ -1,7 +1,7 @@
 //! The agent loop: hand the model a prompt plus the available tools, let it
 //! call them, enforce permissions on every call, feed results back, and return
 //! the final answer. This is where the LLM, the tools, and the permission gate
-//! meet — the core of Veil Agent.
+//! meet — the core of Deamos Agent.
 
 use serde::Serialize;
 use std::path::Path;
@@ -100,7 +100,9 @@ impl Agent {
     pub async fn run(&self, user_prompt: &str) -> Result<AgentOutcome, LlmError> {
         let tools = self.tools();
         let mut messages = vec![
-            Message::system("You are Veil Agent. Use the provided tools when helpful. Be concise."),
+            Message::system(
+                "You are Deamos Agent. Use the provided tools when helpful. Be concise.",
+            ),
             Message::user(user_prompt),
         ];
         let mut steps = Vec::new();
@@ -297,7 +299,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let root = std::env::temp_dir().join(format!("veil-agent-{n}"));
+        let root = std::env::temp_dir().join(format!("deamos-agent-{n}"));
         std::fs::create_dir_all(&root).unwrap();
         let file = root.join("note.txt");
         std::fs::write(&file, b"the secret is 42").unwrap();

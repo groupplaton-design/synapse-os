@@ -1,8 +1,8 @@
-# Veil OS task runner.  Install `just`:  https://github.com/casey/just
+# DeamOS task runner.  Install `just`:  https://github.com/casey/just
 # Image builds require Linux + podman.  On Windows use the Fedora dev VM
 # (see docs/build-plan.md §1) or just let GitHub Actions do it.
 
-image    := "veil-base"
+image    := "deamos-base"
 registry := "ghcr.io/agent4bnk-spec"
 tag      := "latest"
 

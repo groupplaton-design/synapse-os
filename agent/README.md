@@ -1,10 +1,10 @@
 # agent/
 
-Source code of **Veil Agent** — the system-level AI daemon (`veil-agentd`).
+Source code of **Deamos Agent** — the system-level AI daemon (`deamos-agentd`).
 
-Veil Agent is an MCP-based service that exposes a unified AI interface to all
-native Veil OS apps, with controlled access to filesystem, active windows
-(AT-SPI), terminal, browser, calendar/contacts/notes, and the local Veil Models
+Deamos Agent is an MCP-based service that exposes a unified AI interface to all
+native DeamOS apps, with controlled access to filesystem, active windows
+(AT-SPI), terminal, browser, calendar/contacts/notes, and the local Deamos Models
 endpoints.
 
 ## Status — B-M1 skeleton (current)
@@ -19,7 +19,7 @@ permission-gated tool** (`fs_read`), and **local LLM chat** via Ollama.
 ```
 agent/
   Cargo.toml            # workspace
-  veil-agentd/          # the daemon crate
+  deamos-agentd/          # the daemon crate
     src/main.rs         # entry point: `run` (daemon) and `chat` (omnibox stub)
     src/lib.rs          # library root
     src/config.rs       # TOML config + defaults (tested)
@@ -38,7 +38,7 @@ may call it, each call passes the **permission gate + FsPolicy**, the result is
 fed back, and the final answer is returned with a log of tool steps.
 
 ```
-cargo run -p veil-agentd -- ask "what does ~/Projects/README say?"
+cargo run -p deamos-agentd -- ask "what does ~/Projects/README say?"
 # [tool] fs_read /home/u/Projects/README -> ok
 # <model's answer>
 ```
@@ -54,10 +54,10 @@ llama3.2`):
 ```
 cd agent
 # one-shot from the terminal (omnibox stand-in):
-cargo run -p veil-agentd -- chat "summarize the idea of Veil OS"
+cargo run -p deamos-agentd -- chat "summarize the idea of DeamOS"
 
 # or via the running daemon:
-cargo run -p veil-agentd            # in one shell
+cargo run -p deamos-agentd            # in one shell
 curl -s localhost:7421/chat -d '{"prompt":"hello"}' -H 'content-type: application/json'
 ```
 
@@ -81,20 +81,20 @@ Defaults are locked down: no roots permitted, approval required.
 
 ```
 cd agent
-cargo run -p veil-agentd
+cargo run -p deamos-agentd
 # in another shell:
 curl http://127.0.0.1:7421/health
-# -> {"status":"ok","service":"veil-agentd","version":"0.1.0","uptime_secs":N}
+# -> {"status":"ok","service":"deamos-agentd","version":"0.1.0","uptime_secs":N}
 ```
 
-Config is read from `/etc/veil/agent.toml` (override with `--config PATH`);
+Config is read from `/etc/deamos/agent.toml` (override with `--config PATH`);
 defaults apply when it is absent.
 
 ## Planned structure (later increments)
 
 ```
 agent/
-  veil-agentd/          # core daemon (this crate, grows)
+  deamos-agentd/          # core daemon (this crate, grows)
   mcp-servers/          # built-in MCP servers: files, browser, terminal, calendar
   ui/                   # omnibox + tray UI (Qt/QML, KDE-native)
   voice/                # Whisper.cpp + Piper integration

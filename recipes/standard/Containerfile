@@ -1,49 +1,49 @@
-# Veil OS — standard edition (veil-standard)
+# DeamOS — standard edition (deamos-standard)
 #
-# veil-base + local AI stack (Ollama) + Veil Agent. The default desktop edition.
+# deamos-base + local AI stack (Ollama) + Deamos Agent. The default desktop edition.
 # For NVIDIA, see recipes/standard-nvidia/.
 
-# --- Stage 1: compile veil-agentd -------------------------------------------
+# --- Stage 1: compile deamos-agentd -------------------------------------------
 FROM docker.io/library/rust:1-bookworm AS agent-builder
 # cmake/clang for the rustls crypto provider (aws-lc-rs) build.
 RUN apt-get update && apt-get install -y --no-install-recommends cmake clang \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 COPY agent /src/agent
-RUN cd agent && cargo build --release -p veil-agentd
+RUN cd agent && cargo build --release -p deamos-agentd
 
 # --- Stage 2: the image -----------------------------------------------------
-FROM ghcr.io/agent4bnk-spec/veil-base:latest
+FROM ghcr.io/agent4bnk-spec/deamos-base:latest
 
 # AI stack (Ollama systemd service).
 COPY recipes/modules/ai-stack/install.sh /tmp/ai-stack.sh
 RUN bash /tmp/ai-stack.sh && rm -f /tmp/ai-stack.sh
 
-# Veil Agent: binary + user service (auto-start) + safe default config.
-COPY --from=agent-builder /src/agent/target/release/veil-agentd /usr/bin/veil-agentd
-COPY recipes/modules/veil-agent/veil-agentd.service /usr/lib/systemd/user/veil-agentd.service
-COPY recipes/modules/veil-agent/agent.toml /etc/veil/agent.toml
-RUN systemctl --global enable veil-agentd.service
+# Deamos Agent: binary + user service (auto-start) + safe default config.
+COPY --from=agent-builder /src/agent/target/release/deamos-agentd /usr/bin/deamos-agentd
+COPY recipes/modules/deamos-agent/deamos-agentd.service /usr/lib/systemd/user/deamos-agentd.service
+COPY recipes/modules/deamos-agent/agent.toml /etc/deamos/agent.toml
+RUN systemctl --global enable deamos-agentd.service
 
 # First-boot setup (A-M3): recommend + pull a model sized to the machine.
-COPY recipes/modules/firstboot/veil-firstboot.sh /usr/bin/veil-firstboot
-COPY recipes/modules/firstboot/veil-firstboot.service /usr/lib/systemd/user/veil-firstboot.service
-RUN chmod +x /usr/bin/veil-firstboot && systemctl --global enable veil-firstboot.service
+COPY recipes/modules/firstboot/deamos-firstboot.sh /usr/bin/deamos-firstboot
+COPY recipes/modules/firstboot/deamos-firstboot.service /usr/lib/systemd/user/deamos-firstboot.service
+RUN chmod +x /usr/bin/deamos-firstboot && systemctl --global enable deamos-firstboot.service
 
 # Omnibox: kdialog prompt -> /agent, launchable (KRunner/menu) and bound to
 # Meta+A for new users.
-COPY recipes/modules/omnibox/veil-omnibox.sh /usr/bin/veil-omnibox
-COPY recipes/modules/omnibox/veil-omnibox.desktop /usr/share/applications/veil-omnibox.desktop
+COPY recipes/modules/omnibox/deamos-omnibox.sh /usr/bin/deamos-omnibox
+COPY recipes/modules/omnibox/deamos-omnibox.desktop /usr/share/applications/deamos-omnibox.desktop
 COPY recipes/modules/omnibox/kglobalshortcutsrc /etc/skel/.config/kglobalshortcutsrc
-RUN chmod +x /usr/bin/veil-omnibox
+RUN chmod +x /usr/bin/deamos-omnibox
 
 # Mark the edition.
-RUN sed -i 's/^VEIL_EDITION=.*/VEIL_EDITION="standard"/' /usr/lib/os-release
+RUN sed -i 's/^DEAMOS_EDITION=.*/DEAMOS_EDITION="standard"/' /usr/lib/os-release
 
 # --- Build-time sanity ------------------------------------------------------
-RUN command -v ollama && command -v veil-agentd && \
+RUN command -v ollama && command -v deamos-agentd && \
     test -f /usr/lib/systemd/system/ollama.service && \
-    test -f /usr/lib/systemd/user/veil-agentd.service && \
-    test -x /usr/bin/veil-firstboot && \
-    test -x /usr/bin/veil-omnibox && \
-    test -f /etc/veil/agent.toml
+    test -f /usr/lib/systemd/user/deamos-agentd.service && \
+    test -x /usr/bin/deamos-firstboot && \
+    test -x /usr/bin/deamos-omnibox && \
+    test -f /etc/deamos/agent.toml

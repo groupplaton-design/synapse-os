@@ -1,8 +1,8 @@
 [package]
-name = "veil-agentd"
+name = "deamos-agentd"
 version = "0.1.0"
 edition = "2021"
-description = "Veil Agent — system-level AI daemon for Veil OS"
+description = "Deamos Agent — system-level AI daemon for DeamOS"
 license = "Apache-2.0"
 repository = "https://github.com/agent4bnk-spec/synapse-os"
 

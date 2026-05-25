@@ -4,9 +4,9 @@ Branding and visual assets.
 
 ## Shipped (A-M1, wired in `recipes/base/Containerfile`)
 
-- `logo.svg` — Veil OS mark → image `/usr/share/pixmaps/veil-logo.svg`.
-- `wallpapers/Veil/` — KDE wallpaper package (KPackage `metadata.json` +
-  `contents/images/1920x1080.svg`) → `/usr/share/wallpapers/Veil/`. Appears in
+- `logo.svg` — DeamOS mark → image `/usr/share/pixmaps/deamos-logo.svg`.
+- `wallpapers/Deamos/` — KDE wallpaper package (KPackage `metadata.json` +
+  `contents/images/1920x1080.svg`) → `/usr/share/wallpapers/Deamos/`. Appears in
   the wallpaper picker and is set as the default for new users via the
   `/etc/skel` Plasma config.
 

@@ -1,4 +1,4 @@
-# Veil OS — Build & Coding Plan
+# DeamOS — Build & Coding Plan
 
 The engineering companion to [`roadmap.md`](./roadmap.md). The roadmap answers
 *what and when* in business terms; this document answers *how we actually build
@@ -19,7 +19,7 @@ it* — tools, repo mechanics, the order code gets written, and the definition o
    to `ghcr.io`. The dev machine only *tests* (in a VM). This keeps builds
    reproducible and frees us from "works on my machine".
 4. **Two parallel tracks.** Track A = the OS image (integration work). Track B =
-   Veil Agent + native apps (real software engineering). They meet at install
+   Deamos Agent + native apps (real software engineering). They meet at install
    time. A solo dev alternates; a team splits.
 5. **Honesty about scope.** A polished AI-native OS is a multi-year effort. The
    plan front-loads a *usable, installable* system in ~6 months and treats the
@@ -51,17 +51,17 @@ qemu/kvm + virt-manager  # boot and test images locally
 ```
 
 VM testing on the Windows host itself: **Hyper-V** or **VirtualBox** to boot the
-produced ISO. Enable nested virtualization if testing WayDroid/VMs inside Veil.
+produced ISO. Enable nested virtualization if testing WayDroid/VMs inside Deamos.
 
 ---
 
 ## 2. Repo mechanics
 
-Current repo: `agent4bnk-spec/synapse-os` (private, codename — brand is `Veil OS`).
+Current repo: `agent4bnk-spec/synapse-os` (private, codename — brand is `DeamOS`).
 
 ```
 recipes/        # Containerfiles per edition + reusable modules   <- Track A
-agent/          # Veil Agent daemon + apps                         <- Track B
+agent/          # Deamos Agent daemon + apps                         <- Track B
 iso/            # ISO build wrappers, kickstart/install configs
 assets/         # branding (logo, plymouth, wallpapers)
 docs/           # vision, roadmap, build-plan, compatibility
@@ -74,7 +74,7 @@ Conventions:
 - **Branching:** trunk-based. `main` is always buildable. Feature branches +
   PR even solo (CI must pass before merge).
 - **Versioning:** image tags `vYYYY.MM.N` (date-based, like Fedora Atomic).
-- **Registry:** images pushed to `ghcr.io/agent4bnk-spec/veil-<edition>`.
+- **Registry:** images pushed to `ghcr.io/agent4bnk-spec/deamos-<edition>`.
 - **Signing:** images signed with `cosign` from Phase 1 onward (supply-chain
   trust is part of the privacy promise). Keys in GitHub Actions secrets.
 - **No binaries in git:** models, ISOs, qcow2 stay out (already in `.gitignore`);
@@ -88,9 +88,9 @@ Conventions:
  recipes/<edition>/Containerfile
         │  (podman build, in GitHub Actions)
         ▼
- OCI image  ──push──►  ghcr.io/.../veil-standard:vYYYY.MM.N   (signed w/ cosign)
+ OCI image  ──push──►  ghcr.io/.../deamos-standard:vYYYY.MM.N   (signed w/ cosign)
         │
-        ├──► users update via:  bootc switch ghcr.io/.../veil-standard:latest
+        ├──► users update via:  bootc switch ghcr.io/.../deamos-standard:latest
         │
         └──► bootc-image-builder
                    │
@@ -121,9 +121,9 @@ Incremental milestones. Each ends in a bootable artifact.
   or Bazzite** images (battle-tested bootc + hardware enablement) rather than
   raw Fedora Atomic — saves months of driver pain.
 - Minimal `recipes/base/Containerfile`: `FROM` the base, change `/etc/os-release`
-  to Veil OS branding, add our package overlay placeholder.
+  to DeamOS branding, add our package overlay placeholder.
 - Get `build-image.yml` green; produce first ISO via `build-iso.yml`.
-- **Done when:** the ISO installs in a VM and shows "Veil OS" at login.
+- **Done when:** the ISO installs in a VM and shows "DeamOS" at login.
 
 ### A-M1 — Desktop identity (week 3–4)
 - KDE Plasma 6, Wayland-only confirmed on base.
@@ -131,7 +131,7 @@ Incremental milestones. Each ends in a bootable artifact.
   layout scripts.
 - Plymouth boot splash, default wallpaper, GTK/Qt theme, cursor/icon set from
   `assets/`.
-- **Done when:** a freshly installed VM looks like Veil, not stock Fedora KDE.
+- **Done when:** a freshly installed VM looks like Deamos, not stock Fedora KDE.
 
 ### A-M2 — AI stack baked in (month 2)
 - `recipes/modules/ai-stack`: Ollama (systemd service), preselected models
@@ -163,7 +163,7 @@ Incremental milestones. Each ends in a bootable artifact.
 
 ---
 
-## 5. Track B — Veil Agent & apps (software engineering)
+## 5. Track B — Deamos Agent & apps (software engineering)
 
 This is where the real product differentiation and the bulk of the code lives.
 
@@ -191,7 +191,7 @@ This is where the real product differentiation and the bulk of the code lives.
   find files by meaning.
 
 ### B-M3+ — Tier 1 native apps (Phase 2 territory)
-- Veil Files, Vault, Capture, Backup, Restore Center, Browser. Each its own
+- Deamos Files, Vault, Capture, Backup, Restore Center, Browser. Each its own
   crate/module under `agent/` (or a sibling `apps/`), each shippable
   independently as a Flatpak so they update faster than the base image.
 
@@ -235,7 +235,7 @@ A checklist to go from "repo with docs" to "an ISO I installed myself".
 - [ ] Add `.github/workflows/build-image.yml` — build + push to GHCR on push to main.
 - [ ] Add `.github/workflows/build-iso.yml` — build ISO on tag, publish Release.
 - [ ] Cut tag `v2026.06.0`, let CI produce the first ISO.
-- [ ] Install that ISO in a fresh VM. **Milestone reached when it boots to a "Veil OS" login.**
+- [ ] Install that ISO in a fresh VM. **Milestone reached when it boots to a "DeamOS" login.**
 - [ ] In parallel: scaffold `agent/` — choose Rust, `cargo new`, a `health` endpoint, CI `cargo test`. (**B-M0/B-M1 start**)
 - [ ] Open GitHub Issues for A-M1 and B-M1; switch sprint tracking to GitHub Projects.
 

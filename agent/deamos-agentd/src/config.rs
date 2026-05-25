@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::path::{Path, PathBuf};
 
-/// Runtime configuration for `veil-agentd`.
+/// Runtime configuration for `deamos-agentd`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {

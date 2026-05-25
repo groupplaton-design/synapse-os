@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Deamos Agent
+GenericName=AI Assistant
+Comment=Ask the local AI agent
+Exec=/usr/bin/deamos-omnibox
+Icon=/usr/share/pixmaps/deamos-logo.svg
+Terminal=false
+Categories=Utility;
+Keywords=ai;agent;assistant;deamos;ask;

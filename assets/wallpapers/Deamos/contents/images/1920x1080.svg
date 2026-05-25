@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <!-- deep, near-black field with a faint cool glow off-centre -->
+    <radialGradient id="bg" cx="42%" cy="30%" r="100%">
+      <stop offset="0%"  stop-color="#161b33"/>
+      <stop offset="42%" stop-color="#0d1024"/>
+      <stop offset="100%" stop-color="#05060d"/>
+    </radialGradient>
+    <linearGradient id="haze1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#5b6cff" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#9d6bff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="haze2" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#36d1c4" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#5b6cff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#36d1c4"/>
+      <stop offset="100%" stop-color="#7a8cff"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.2"/>
+    </filter>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+
+  <!-- layered "haze" curtains: soft drifting light -->
+  <path d="M -100 200 C 480 40 980 500 1500 280 C 1780 160 1980 340 2050 220 L 2050 -60 L -100 -60 Z"
+        fill="url(#haze1)"/>
+  <path d="M -100 1000 C 420 1140 1020 740 1520 960 C 1800 1080 1980 900 2050 1020 L 2050 1140 L -100 1140 Z"
+        fill="url(#haze2)"/>
+
+  <!-- thin haze threads -->
+  <g fill="none" stroke="#7a8cff" stroke-opacity="0.10">
+    <path d="M -100 600 C 560 500 1080 760 1640 600 C 1840 540 1980 640 2050 600" stroke-width="1.5"/>
+    <path d="M -100 660 C 600 580 1100 820 1660 660 C 1860 600 1990 690 2050 660" stroke-width="1"/>
+    <path d="M -100 540 C 520 440 1060 700 1620 540 C 1820 480 1970 580 2050 540" stroke-width="1"/>
+  </g>
+
+  <!-- wordmark -->
+  <g transform="translate(960 558)" text-anchor="middle"
+     font-family="'Inter','Segoe UI',Helvetica,sans-serif">
+    <text y="0" font-size="124" font-weight="600" letter-spacing="2"
+          fill="#f1f3ff" filter="url(#soft)" opacity="0.55">Deamos</text>
+    <text y="0" font-size="124" font-weight="600" letter-spacing="2"
+          fill="#f4f6ff">Deamos</text>
+    <rect x="-70" y="34" width="140" height="3" rx="1.5" fill="url(#accent)"/>
+    <text y="92" font-size="25" font-weight="400" letter-spacing="11"
+          fill="#9aa3cf">a product of free people</text>
+  </g>
+</svg>
