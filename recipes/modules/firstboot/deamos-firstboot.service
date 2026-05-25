@@ -1,0 +1,10 @@
+[Unit]
+Description=DeamOS first-boot setup (recommend + pull a local model)
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/deamos-firstboot
+
+[Install]
+WantedBy=default.target

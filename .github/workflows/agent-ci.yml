@@ -1,6 +1,6 @@
 name: agent-ci
 
-# Track B: build and test the Veil Agent daemon.
+# Track B: build and test the Deamos Agent daemon.
 # Hard gates: build, test, rustfmt, clippy (-D warnings).
 
 on:

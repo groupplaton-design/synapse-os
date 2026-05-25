@@ -44,7 +44,7 @@ pub struct Health {
 pub fn health_payload(started: Instant) -> Health {
     Health {
         status: "ok",
-        service: "veil-agentd",
+        service: "deamos-agentd",
         version: crate::VERSION,
         uptime_secs: started.elapsed().as_secs(),
     }
@@ -205,7 +205,7 @@ pub async fn serve(config: &Config) -> anyhow::Result<()> {
     let addr = config.socket_addr();
     let app = router(state);
     let listener = tokio::net::TcpListener::bind(addr).await?;
-    tracing::info!(%addr, "veil-agentd listening");
+    tracing::info!(%addr, "deamos-agentd listening");
 
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
@@ -229,7 +229,7 @@ mod tests {
     fn health_reports_ok() {
         let h = health_payload(Instant::now());
         assert_eq!(h.status, "ok");
-        assert_eq!(h.service, "veil-agentd");
+        assert_eq!(h.service, "deamos-agentd");
         assert_eq!(h.version, crate::VERSION);
     }
 }

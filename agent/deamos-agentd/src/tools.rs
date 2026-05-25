@@ -99,7 +99,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let d = std::env::temp_dir().join(format!("veil-tool-{n}"));
+        let d = std::env::temp_dir().join(format!("deamos-tool-{n}"));
         std::fs::create_dir_all(&d).unwrap();
         d
     }
@@ -108,13 +108,13 @@ mod tests {
     fn reads_file_within_policy() {
         let root = tmp_dir();
         let f = root.join("hello.txt");
-        std::fs::write(&f, b"hello veil").unwrap();
+        std::fs::write(&f, b"hello deamos").unwrap();
         let policy = FsPolicy {
             allowed_roots: vec![root],
             max_read_bytes: 1024,
         };
         let resp = fs_read(&policy, &f).unwrap();
-        assert_eq!(resp.content, "hello veil");
+        assert_eq!(resp.content, "hello deamos");
         assert_eq!(resp.bytes, 10);
     }
 

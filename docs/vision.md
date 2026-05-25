@@ -1,6 +1,6 @@
-# Veil OS — Vision and Architecture
+# DeamOS — Vision and Architecture
 
-> Working codename: **synapse-os** (in repo). Public brand: **Veil OS** — pending trademark and domain verification before public launch.
+> Working codename: **synapse-os** (in repo). Public brand: **DeamOS** — pending trademark and domain verification before public launch.
 
 ---
 
@@ -14,7 +14,7 @@ Local-first AI agent woven into every layer of the system — from semantic file
 
 ## Positioning
 
-Not "ChatGPT bundled with Linux." Veil OS is an **operating system that understands what the user wants to do and has hands inside the system to actually do it** — while keeping all data on the device by default.
+Not "ChatGPT bundled with Linux." DeamOS is an **operating system that understands what the user wants to do and has hands inside the system to actually do it** — while keeping all data on the device by default.
 
 Three target audiences (in priority order):
 
@@ -22,7 +22,7 @@ Three target audiences (in priority order):
 2. **Creators** (Stable Diffusion, ComfyUI, video, music) — want preconfigured AI pipelines, GPU acceleration OOTB.
 3. **Privacy-conscious users** — refuse Copilot+ PC and Apple Intelligence, want sovereign AI on their own hardware.
 
-Linux desktop will never be a mass market. Veil OS targets a niche $50M+ business with strong margins, not a Windows replacement for grandmothers.
+Linux desktop will never be a mass market. DeamOS targets a niche $50M+ business with strong margins, not a Windows replacement for grandmothers.
 
 ---
 
@@ -54,7 +54,7 @@ Layouts can be swapped at any time without reinstall. One base theme: dark + lig
 
 ## AI Layer (the differentiating core)
 
-### Veil Agent — system-level AI daemon
+### Deamos Agent — system-level AI daemon
 
 An MCP-based daemon with controlled access to:
 
@@ -72,9 +72,9 @@ Default models:
 
 Triggers:
 
-- **Voice** — `whisper.cpp` locally, hotword "Hey Veil"
+- **Voice** — `whisper.cpp` locally, hotword "Hey Deamos"
 - **Text** — global hotkey (Super+Space) opens the omnibox (Spotlight + ChatGPT + launcher in one)
-- **Context** — right-click any file or text → "Ask Veil about this"
+- **Context** — right-click any file or text → "Ask Deamos about this"
 
 ### Semantic file search
 
@@ -87,7 +87,7 @@ Background process indexes all user files with local embedding models (`nomic-em
 
 Queries like *"find that spreadsheet about marketing from last spring"* work locally. Vector store: LanceDB or Qdrant in embedded mode.
 
-### Veil Models — local Model Hub
+### Deamos Models — local Model Hub
 
 App Store, but for AI models:
 
@@ -110,7 +110,7 @@ Every native app has AI pipelines built in:
 
 ## Hardware Support
 
-The biggest pain point on Linux. Veil OS solves it.
+The biggest pain point on Linux. DeamOS solves it.
 
 | Hardware | Support |
 |---|---|
@@ -197,7 +197,7 @@ This is the positioning anchor against Copilot+ PC and Apple Intelligence.
 
 #### Layered anonymity model
 
-There is no single "anonymity button" — different threats need different tools. Veil Agent helps the user pick the right layer for the task. We ship three, from light to paranoid:
+There is no single "anonymity button" — different threats need different tools. Deamos Agent helps the user pick the right layer for the task. We ship three, from light to paranoid:
 
 | Layer | Tool | Threat it defeats | Cost |
 |---|---|---|---|
@@ -226,9 +226,9 @@ There is no single "anonymity button" — different threats need different tools
 |---|---|---|
 | **Tailscale** | Zero-config mesh VPN between all user devices | Preinstalled, opt-in |
 | **Yggdrasil** | Fully decentralized mesh | Option for enthusiasts |
-| **mDNS / Avahi** | Local discovery — Veil devices see each other in LAN | Enabled |
-| **WiFi Direct + KDE Connect** | AirDrop-style file transfer Veil ↔ Android | Default |
-| **Veil LAN protocol** | Veil machines in LAN auto-federate: share AI inference, common model hub, shared agent memory | Default |
+| **mDNS / Avahi** | Local discovery — Deamos devices see each other in LAN | Enabled |
+| **WiFi Direct + KDE Connect** | AirDrop-style file transfer Deamos ↔ Android | Default |
+| **Deamos LAN protocol** | Deamos machines in LAN auto-federate: share AI inference, common model hub, shared agent memory | Default |
 
 ### VPN integration
 
@@ -245,7 +245,7 @@ Preinstalled (opt-in import of configs):
 
 Home workstation with 24 GB VRAM + laptop without GPU + old PC with 16 GB RAM.
 In ordinary OS — the laptop chokes on AI.
-In Veil OS — laptop sees workstation via Tailscale / LAN, **transparently uses its GPU** for inference. The small voice-command model runs locally; heavy work is routed to the home server. No cloud, no subscriptions, no data leaves your network.
+In DeamOS — laptop sees workstation via Tailscale / LAN, **transparently uses its GPU** for inference. The small voice-command model runs locally; heavy work is routed to the home server. No cloud, no subscriptions, no data leaves your network.
 
 Implementation: Ollama + RPC layer + mDNS service discovery.
 
@@ -266,20 +266,20 @@ Implementation: Ollama + RPC layer + mDNS service discovery.
 - Backblaze B2 (~$6/TB/month)
 - AWS S3 / Cloudflare R2 / Wasabi
 - **Storj / Filecoin / Sia** — decentralized, end-to-end encrypted by design
-- **Veil Cloud Backup** (Pro tier, +$5/month) — our infrastructure, but we technically cannot decrypt
+- **Deamos Cloud Backup** (Pro tier, +$5/month) — our infrastructure, but we technically cannot decrypt
 
 ### System-as-Code via bootc (killer feature)
 
 The entire OS is described as a `Containerfile` in your private GitHub repo:
 
 - **One file = your entire OS** — packages, configs, app stack, customizations
-- **Migration to new hardware in 30 minutes** — install base Veil → `bootc switch ghcr.io/yourname/my-machine:latest` → identical OS (apps, wallpaper, shortcuts, AI agent settings)
+- **Migration to new hardware in 30 minutes** — install base Deamos → `bootc switch ghcr.io/yourname/my-machine:latest` → identical OS (apps, wallpaper, shortcuts, AI agent settings)
 - **Rollback to any date** — every change is a git commit. Want your OS from 6 months ago? `git checkout` + `bootc switch`
 - **Team / family** — one Containerfile = shared OS profile for you and your partner / colleagues
 
 Nobody else offers this. Real wow-factor for developers.
 
-### Veil Restore Center
+### Deamos Restore Center
 
 GUI in system settings — list of snapshots with previews of changes (Time Machine UX). Available in GRUB at boot too — recover without entering the system if an update broke boot.
 
@@ -301,7 +301,7 @@ GUI in system settings — list of snapshots with previews of changes (Time Mach
 
 **Hardware wallet OOTB**: Ledger, Trezor, ColdCard, BitBox — udev rules + libraries preinstalled. Plug in USB → it works.
 
-**Encrypted keystore**: software-wallet private keys never live in plaintext. Stored in `~/.veil/vault/` (separate fscrypt volume) + TPM-bound. Access requires biometric / PIN.
+**Encrypted keystore**: software-wallet private keys never live in plaintext. Stored in `~/.deamos/vault/` (separate fscrypt volume) + TPM-bound. Access requires biometric / PIN.
 
 ### Killer features
 
@@ -316,7 +316,7 @@ What we do NOT do: our own DEX, our own token, our own NFT marketplace. We do no
 
 ## Smart Home
 
-In Hub mode, the Veil machine becomes the **local AI brain of the home**. No Amazon, no Google, no Apple. Everything on user hardware.
+In Hub mode, the Deamos machine becomes the **local AI brain of the home**. No Amazon, no Google, no Apple. Everything on user hardware.
 
 ### Preinstalled stack (optional Hub edition)
 
@@ -332,9 +332,9 @@ In Hub mode, the Veil machine becomes the **local AI brain of the home**. No Ama
 
 ### Killer feature — cloudless voice assistant
 
-Any Veil machine (or Veil-tablet in a room) becomes a voice assistant:
+Any Deamos machine (or Deamos-tablet in a room) becomes a voice assistant:
 
-1. Wake word "Hey Veil"
+1. Wake word "Hey Deamos"
 2. `whisper.cpp` STT locally
 3. Local LLM understands
 4. Action via Home Assistant API
@@ -357,7 +357,7 @@ Privacy mode features (killer differentiation over Alexa / Google Home):
 
 OS is free. Revenue comes from:
 
-### 1. Veil Pro — $12/month or $99/year
+### 1. Deamos Pro — $12/month or $99/year
 
 - Cloud inference passthrough (OpenRouter under the hood): $5/month credits inside → 30-40% margin
 - Settings sync, encrypted backup of AI agent memory, multi-device
@@ -366,9 +366,9 @@ OS is free. Revenue comes from:
 
 ### 2. Hardware bundles
 
-Partnership with ODMs (Tongfang, Clevo, BIWIN) — sell AI workstation laptops / mini-PCs with preinstalled Veil OS. $200-500 margin per device. System76 / Tuxedo model.
+Partnership with ODMs (Tongfang, Clevo, BIWIN) — sell AI workstation laptops / mini-PCs with preinstalled DeamOS. $200-500 margin per device. System76 / Tuxedo model.
 
-### 3. Veil Enterprise — $50-150/seat/month
+### 3. Deamos Enterprise — $50-150/seat/month
 
 Privacy-first AI workstation for companies that cannot go to the cloud (legal, medical, defense, banking).
 
@@ -376,7 +376,7 @@ Privacy-first AI workstation for companies that cannot go to the cloud (legal, m
 - On-premise model hub
 - **Where the real money is.** 100 seats × $100 × 12 = $120k ARR from one client.
 
-### 4. Veil Studio (separate paid tier, $29/month)
+### 4. Deamos Studio (separate paid tier, $29/month)
 
 Creator-focused build with DaVinci, preconfigured ComfyUI workflows, Blender + AI plugins.
 
@@ -416,7 +416,7 @@ CPU-only inference works (llama.cpp) but at 5-10 t/s vs 50 t/s on GPU/NPU. NPU/G
 
 Three scenarios:
 
-### A. Veil OS *installed on* tablet / mobile — partial, not everywhere
+### A. DeamOS *installed on* tablet / mobile — partial, not everywhere
 
 | Device | Possible? | Timeline |
 |---|---|---|
@@ -430,21 +430,21 @@ Three scenarios:
 | Android phones generally | Possible via postmarketOS approach — but every model = separate port | Not in years 1-2 |
 | **iPhone** | **No** | Never |
 
-### B. Veil Companion app for existing iOS / Android — yes, ship it
+### B. Deamos Companion app for existing iOS / Android — yes, ship it
 
-Compromise: user's phone stays on iOS / Android, but installs **Veil Companion** app that:
+Compromise: user's phone stays on iOS / Android, but installs **Deamos Companion** app that:
 
-- Connects to user's home Veil machine via Tailscale / LAN
+- Connects to user's home Deamos machine via Tailscale / LAN
 - Sends AI queries there, gets answers
-- Backs up photos / contacts to user's Veil Cloud (zero-knowledge)
+- Backs up photos / contacts to user's Deamos Cloud (zero-knowledge)
 - Controls smart home through the home machine
 - Sends agent commands: *"find that March presentation"* → 10 sec → result
 
 **More realistic path to mobile users** than building a phone OS from scratch.
 
-### C. Veil Mobile OS — long-term dream, not now
+### C. Deamos Mobile OS — long-term dream, not now
 
-In 2-3 years, if the main product takes off — fork postmarketOS / Mobile NixOS, support PinePhone Pro / Librem 5 / Furi Phone first. Possibly partnership with a Chinese ODM for a Veil Phone. **Far future, not in the first roadmap.**
+In 2-3 years, if the main product takes off — fork postmarketOS / Mobile NixOS, support PinePhone Pro / Librem 5 / Furi Phone first. Possibly partnership with a Chinese ODM for a Deamos Phone. **Far future, not in the first roadmap.**
 
 ---
 
@@ -464,7 +464,7 @@ In 2-3 years, if the main product takes off — fork postmarketOS / Mobile NixOS
 - Fork of Universal Blue / Bazzite with customization
 - Own brand, builds via GitHub Actions (bootc → OCI image)
 - Preinstalled AI stack (Ollama, Whisper, ComfyUI, all via rpm-ostree layered packages)
-- Basic Veil Agent on top of existing open-source (Open WebUI + MCP)
+- Basic Deamos Agent on top of existing open-source (Open WebUI + MCP)
 - Website, documentation, Discord
 - **1,000-5,000 first users** from r/LocalLLaMA, HackerNews, X community.
 

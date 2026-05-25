@@ -58,7 +58,7 @@ pub struct InteractiveApprover;
 impl Approver for InteractiveApprover {
     fn decide(&self, request: &PermissionRequest) -> Decision {
         let prompt = format!(
-            "Veil Agent wants to {} {}.\n\nAllow this?",
+            "Deamos Agent wants to {} {}.\n\nAllow this?",
             request.action, request.resource
         );
         match gui_confirm(&prompt) {
@@ -139,7 +139,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let d = std::env::temp_dir().join(format!("veil-{tag}-{n}"));
+        let d = std::env::temp_dir().join(format!("deamos-{tag}-{n}"));
         std::fs::create_dir_all(&d).unwrap();
         d
     }

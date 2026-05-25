@@ -1,23 +1,23 @@
-//! `veil-agentd` entry point: parse args, load config, then either run the
+//! `deamos-agentd` entry point: parse args, load config, then either run the
 //! daemon or perform a one-shot chat (omnibox stand-in).
 
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use std::sync::Arc;
-use veil_agentd::agent::Agent;
-use veil_agentd::config::Config;
-use veil_agentd::llm::{ChatBackend, OllamaBackend};
-use veil_agentd::permissions::{Approver, AutoApprover, FsPolicy, InteractiveApprover};
+use deamos_agentd::agent::Agent;
+use deamos_agentd::config::Config;
+use deamos_agentd::llm::{ChatBackend, OllamaBackend};
+use deamos_agentd::permissions::{Approver, AutoApprover, FsPolicy, InteractiveApprover};
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "veil-agentd",
+    name = "deamos-agentd",
     version,
-    about = "Veil Agent — system-level AI daemon for Veil OS"
+    about = "Deamos Agent — system-level AI daemon for DeamOS"
 )]
 struct Cli {
     /// Path to the TOML config file. Built-in defaults are used if it is absent.
-    #[arg(short, long, default_value = "/etc/veil/agent.toml", global = true)]
+    #[arg(short, long, default_value = "/etc/deamos/agent.toml", global = true)]
     config: PathBuf,
 
     #[command(subcommand)]
@@ -63,8 +63,8 @@ async fn main() -> anyhow::Result<()> {
                 .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new(&config.log_level));
             tracing_subscriber::fmt().with_env_filter(filter).init();
 
-            tracing::info!(version = veil_agentd::VERSION, "starting veil-agentd");
-            veil_agentd::server::serve(&config).await
+            tracing::info!(version = deamos_agentd::VERSION, "starting deamos-agentd");
+            deamos_agentd::server::serve(&config).await
         }
         Command::Chat { prompt, model } => {
             let backend = OllamaBackend::new(config.ollama_url.clone());
@@ -94,8 +94,8 @@ async fn main() -> anyhow::Result<()> {
             Ok(())
         }
         Command::Recommend { quiet } => {
-            let specs = veil_agentd::hardware::detect();
-            let model = veil_agentd::hardware::recommend_model(&specs);
+            let specs = deamos_agentd::hardware::detect();
+            let model = deamos_agentd::hardware::recommend_model(&specs);
             if quiet {
                 println!("{model}");
             } else {

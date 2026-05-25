@@ -1,6 +1,6 @@
 name: build-image
 
-# Builds the Veil OS image editions on GitHub runners and pushes to GHCR.
+# Builds the DeamOS image editions on GitHub runners and pushes to GHCR.
 #   base            = Aurora + rebrand + branding
 #   standard        = base + AI stack (Ollama)
 #   standard-nvidia = aurora-nvidia + rebrand + branding + AI stack
@@ -43,7 +43,7 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           containerfiles: ./recipes/base/Containerfile
-          image: veil-base
+          image: deamos-base
           tags: latest ${{ steps.tags.outputs.date }}
           oci: true
       - if: github.event_name != 'pull_request'
@@ -55,13 +55,13 @@ jobs:
       - if: github.event_name != 'pull_request'
         uses: redhat-actions/push-to-registry@v2
         with:
-          image: veil-base
+          image: deamos-base
           tags: latest ${{ steps.tags.outputs.date }}
           registry: ${{ env.REGISTRY }}
 
   standard:
     needs: base
-    # Skipped on PRs: it builds FROM the private veil-base, which only exists
+    # Skipped on PRs: it builds FROM the private deamos-base, which only exists
     # after the base job pushes it.
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
@@ -76,7 +76,7 @@ jobs:
           df -h /
       - id: tags
         run: echo "date=$(date +%Y.%m.%d)" >> "$GITHUB_OUTPUT"
-      # Login BEFORE build so buildah can pull the private veil-base FROM image.
+      # Login BEFORE build so buildah can pull the private deamos-base FROM image.
       - uses: redhat-actions/podman-login@v1
         with:
           registry: ghcr.io
@@ -86,12 +86,12 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           containerfiles: ./recipes/standard/Containerfile
-          image: veil-standard
+          image: deamos-standard
           tags: latest ${{ steps.tags.outputs.date }}
           oci: true
       - uses: redhat-actions/push-to-registry@v2
         with:
-          image: veil-standard
+          image: deamos-standard
           tags: latest ${{ steps.tags.outputs.date }}
           registry: ${{ env.REGISTRY }}
 
@@ -121,11 +121,11 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           containerfiles: ./recipes/standard-nvidia/Containerfile
-          image: veil-standard-nvidia
+          image: deamos-standard-nvidia
           tags: latest ${{ steps.tags.outputs.date }}
           oci: true
       - uses: redhat-actions/push-to-registry@v2
         with:
-          image: veil-standard-nvidia
+          image: deamos-standard-nvidia
           tags: latest ${{ steps.tags.outputs.date }}
           registry: ${{ env.REGISTRY }}

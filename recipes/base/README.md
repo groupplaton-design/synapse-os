@@ -4,7 +4,7 @@
 
 ## Decision
 
-Veil OS is built **on top of** Universal Blue **Aurora**
+DeamOS is built **on top of** Universal Blue **Aurora**
 (`ghcr.io/ublue-os/aurora:stable`), not from raw Fedora and not by rebuilding
 Fedora.
 
@@ -25,7 +25,7 @@ the Universal Blue project. Picking it over the alternatives:
 - We maintain a **layer**, not an OS: `Containerfile` + our apps. Kernel,
   glibc, systemd, dnf — all upstream, updated for free.
 - We inherit Universal Blue's driver and codec work and their bootc plumbing.
-- Differentiation lives **above** the base: Veil Agent, the AI stack, privacy
+- Differentiation lives **above** the base: Deamos Agent, the AI stack, privacy
   layers, branding, first-boot UX.
 
 ## Trade-offs accepted

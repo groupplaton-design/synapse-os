@@ -1,6 +1,6 @@
 name: build-iso
 
-# Heavy pipeline (~25-45 min): turn a Veil OS edition image into a bootable
+# Heavy pipeline (~25-45 min): turn a DeamOS edition image into a bootable
 # Anaconda installer ISO via bootc-image-builder, uploaded as a workflow
 # artifact (standard edition is ~5-6 GB).
 #
@@ -32,9 +32,9 @@ on:
 env:
   # Default to the full standard edition (AI stack + agent); dispatch can pick
   # another. Tag builds fall back to standard.
-  IMAGE: ghcr.io/${{ github.repository_owner }}/veil-${{ github.event.inputs.edition || 'standard' }}:latest
+  IMAGE: ghcr.io/${{ github.repository_owner }}/deamos-${{ github.event.inputs.edition || 'standard' }}:latest
   # Write the (large) ISO to the runner's roomy ephemeral disk, not the small /.
-  OUT: /mnt/veil-output
+  OUT: /mnt/deamos-output
   # Run JS actions on Node 24 (Node 20 is deprecated from June 2026).
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -89,7 +89,7 @@ jobs:
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v4
         with:
-          name: veil-os-iso
+          name: deamos-os-iso
           path: |
             ${{ env.OUT }}/**/*.iso
             ${{ env.OUT }}/SHA256SUMS

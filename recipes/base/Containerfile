@@ -1,10 +1,10 @@
-# Veil OS — base image (veil-base)
+# DeamOS — base image (deamos-base)
 #
 # We build ON TOP of Fedora Atomic, we do not rebuild Fedora. The base is
 # Universal Blue "Aurora" (KDE Plasma, built from Fedora Kinoite) which already
 # solves NVIDIA/AMD drivers and codecs for us. See recipes/base/README.md.
 #
-# veil-base = Aurora + Veil rebrand + branding assets. The standard edition
+# deamos-base = Aurora + Deamos rebrand + branding assets. The standard edition
 # layers the AI stack on top of this.
 
 FROM ghcr.io/ublue-os/aurora:stable
@@ -16,14 +16,14 @@ RUN bash /tmp/rebrand.sh && rm -f /tmp/rebrand.sh
 # --- Branding (A-M1) --------------------------------------------------------
 # All additive: ship our wallpaper package, logo, and a default-wallpaper hint
 # for new users. Nothing here can break boot.
-COPY assets/wallpapers/Veil /usr/share/wallpapers/Veil
-COPY assets/logo.svg /usr/share/pixmaps/veil-logo.svg
+COPY assets/wallpapers/Deamos /usr/share/wallpapers/Deamos
+COPY assets/logo.svg /usr/share/pixmaps/deamos-logo.svg
 COPY recipes/base/skel/plasma-org.kde.plasma.desktop-appletsrc \
      /etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc
 
 # --- Build-time sanity ------------------------------------------------------
-RUN grep -q 'Veil OS' /usr/lib/os-release && \
-    test -f /usr/share/wallpapers/Veil/contents/images/1920x1080.svg
+RUN grep -q 'DeamOS' /usr/lib/os-release && \
+    test -f /usr/share/wallpapers/Deamos/contents/images/1920x1080.svg
 
 # NOTE: plymouth/SDDM themes and KDE layout presets need a boot test before
 # wiring (see assets/README.md).

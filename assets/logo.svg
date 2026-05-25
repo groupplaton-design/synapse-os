@@ -7,7 +7,7 @@
     </linearGradient>
   </defs>
   <rect width="256" height="256" rx="56" fill="#0b0e1a"/>
-  <!-- a stylized veil: a downward chevron under a soft arc -->
+  <!-- a stylized deamos: a downward chevron under a soft arc -->
   <path d="M64 96 C 96 78 160 78 192 96" fill="none" stroke="#36d1c4" stroke-width="10"
         stroke-linecap="round" stroke-opacity="0.8"/>
   <path d="M60 110 L128 196 L196 110" fill="none" stroke="url(#v)" stroke-width="18"

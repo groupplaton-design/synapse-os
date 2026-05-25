@@ -1,4 +1,4 @@
-# Example veil-agentd config. Copy to /etc/veil/agent.toml to override defaults.
+# Example deamos-agentd config. Copy to /etc/deamos/agent.toml to override defaults.
 # Every field is optional — omitted fields fall back to built-in defaults.
 
 # Local API bind address (loopback only; the agent is a local service).

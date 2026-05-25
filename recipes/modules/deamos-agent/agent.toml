@@ -1,4 +1,4 @@
-# Default veil-agentd config baked into Veil OS. Safe by default: no filesystem
+# Default deamos-agentd config baked into DeamOS. Safe by default: no filesystem
 # roots permitted and tool actions require approval until the omnibox UI lands.
 
 listen_addr = "127.0.0.1"

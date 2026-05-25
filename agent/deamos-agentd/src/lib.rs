@@ -1,4 +1,4 @@
-//! Veil Agent daemon (`veil-agentd`) — the system-level AI service for Veil OS.
+//! Deamos Agent daemon (`deamos-agentd`) — the system-level AI service for DeamOS.
 //!
 //! Milestone B-M1 (skeleton): process lifecycle, config, structured logging,
 //! and a local health/version endpoint. MCP tool servers (filesystem,
