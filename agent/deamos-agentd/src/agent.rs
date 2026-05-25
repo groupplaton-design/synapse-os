@@ -100,7 +100,9 @@ impl Agent {
     pub async fn run(&self, user_prompt: &str) -> Result<AgentOutcome, LlmError> {
         let tools = self.tools();
         let mut messages = vec![
-            Message::system("You are Deamos Agent. Use the provided tools when helpful. Be concise."),
+            Message::system(
+                "You are Deamos Agent. Use the provided tools when helpful. Be concise.",
+            ),
             Message::user(user_prompt),
         ];
         let mut steps = Vec::new();

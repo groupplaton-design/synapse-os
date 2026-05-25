@@ -2,12 +2,12 @@
 //! daemon or perform a one-shot chat (omnibox stand-in).
 
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
-use std::sync::Arc;
 use deamos_agentd::agent::Agent;
 use deamos_agentd::config::Config;
 use deamos_agentd::llm::{ChatBackend, OllamaBackend};
 use deamos_agentd::permissions::{Approver, AutoApprover, FsPolicy, InteractiveApprover};
+use std::path::PathBuf;
+use std::sync::Arc;
 
 #[derive(Parser, Debug)]
 #[command(
