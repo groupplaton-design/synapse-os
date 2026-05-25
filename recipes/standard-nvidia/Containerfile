@@ -22,10 +22,24 @@ FROM ghcr.io/ublue-os/aurora-nvidia-open:stable
 COPY recipes/modules/rebrand.sh /tmp/rebrand.sh
 RUN bash /tmp/rebrand.sh && rm -f /tmp/rebrand.sh
 
+# First-boot account/language wizard (no lockout).
+COPY recipes/modules/initial-setup/install.sh /tmp/initial-setup.sh
+RUN bash /tmp/initial-setup.sh && rm -f /tmp/initial-setup.sh
+
 COPY assets/wallpapers/Deamos /usr/share/wallpapers/Deamos
 COPY assets/logo.svg /usr/share/pixmaps/deamos-logo.svg
 COPY recipes/base/skel/plasma-org.kde.plasma.desktop-appletsrc \
      /etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc
+COPY recipes/base/skel/kscreenlockerrc /etc/skel/.config/kscreenlockerrc
+
+# First-login welcome: familiar desktop ergonomics by prior OS.
+COPY recipes/modules/ergonomics/apply-preset.sh   /usr/libexec/deamos/apply-preset.sh
+COPY recipes/modules/ergonomics/layout-windows.js /usr/libexec/deamos/layout-windows.js
+COPY recipes/modules/ergonomics/layout-macos.js   /usr/libexec/deamos/layout-macos.js
+COPY recipes/modules/ergonomics/layout-gnome.js   /usr/libexec/deamos/layout-gnome.js
+COPY recipes/modules/welcome/deamos-welcome.sh    /usr/libexec/deamos/deamos-welcome.sh
+COPY recipes/modules/welcome/deamos-welcome.desktop /etc/xdg/autostart/deamos-welcome.desktop
+RUN chmod +x /usr/libexec/deamos/apply-preset.sh /usr/libexec/deamos/deamos-welcome.sh
 
 # AI stack (Ollama systemd service).
 COPY recipes/modules/ai-stack/install.sh /tmp/ai-stack.sh
@@ -56,4 +70,7 @@ RUN grep -q 'DeamOS' /usr/lib/os-release && \
     test -f /usr/lib/systemd/user/deamos-agentd.service && \
     test -x /usr/bin/deamos-firstboot && \
     test -x /usr/bin/deamos-omnibox && \
+    test -x /usr/libexec/deamos/apply-preset.sh && \
+    test -x /usr/libexec/deamos/deamos-welcome.sh && \
+    test -f /usr/lib/systemd/system/initial-setup.service && \
     test -f /etc/deamos/agent.toml

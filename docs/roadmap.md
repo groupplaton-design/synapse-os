@@ -35,7 +35,7 @@ wiring, public ISO hosting, docs site, closed alpha.
 **Goal:** legal, branding, and decision-making infrastructure in place before any code is written.
 
 - [ ] Trademark verification for "DeamOS" in USPTO, EUIPO, WIPO Madrid Protocol
-- [ ] Domain acquisition (deamosos.com / deamosos.io / deamos-os.org — whichever is available)
+- [ ] Domain acquisition (deamos.org / deamos.io / deamos.ai / getdeamos.com — recheck availability for the "Deamos" spelling)
 - [ ] Legal entity selection and registration (Armenia / Estonia / UAE / Delaware — see legal.md when written)
 - [ ] Bank account + Stripe / Wise setup on the legal entity
 - [ ] Brand assets: logo, color palette, typography
@@ -58,9 +58,40 @@ wiring, public ISO hosting, docs site, closed alpha.
 - [ ] LUKS2 default with anti-coercion features (duress password v1)
 - [~] Driver bundle: NVIDIA (open) + AMD + Intel via Aurora base; NPU pending
 - [ ] Compatibility layer: Bottles + Steam/Proton + WayDroid preinstalled
-- [ ] Documentation site (`docs.deamosos.com`)
+- [ ] Documentation site (`docs.deamos.org`)
 - [ ] Discord / Matrix community
 - [ ] Closed alpha invite via waitlist
+
+### Launch differentiators (the reasons to switch — prioritise for alpha)
+
+Beyond "it boots", these are the wedge features. Most are cheap because the
+bootc/OCI base and the agent already do the hard part.
+
+1. **AI operates the OS** (hero demo). Natural-language → real actions:
+   "enable dark mode", "connect to Wi-Fi X", "install Telegram",
+   "screenshot this and explain the error". Agent already has `terminal_exec`
+   + can drive KDE over D-Bus. This is the one 15-second demo that sells it.
+2. **Hybrid AI — works on any hardware.** Weak machine → tiny local model OR
+   bring-your-own cloud key (OpenAI / Anthropic / OpenRouter); strong machine →
+   fully local & private. Removes the "needs a beefy PC" wall. (Lesson from the
+   3 GB test laptop that couldn't run a local LLM.)
+3. **Can't-break-it + no lockout.** `initial-setup` (no credential-less
+   install), Restore Center (one-click rollback from GUI or GRUB on the
+   btrfs/bootc base), built-in password reset. Trust for switchers.
+4. **Cloud install of your own saved system.** Native to bootc: your
+   personalised DeamOS is an OCI image in *your* cloud; a thin installer pulls
+   *your* image and reproduces your whole setup on any machine in minutes.
+   Rebase/install is ~free (`bootc switch`); capturing your state as config-as-
+   code is the work (overlaps Deamos Backup / Deamos Sync).
+5. **One-toggle Stealth mode** (AmneziaWG → Tor → Nym) + a privacy dashboard
+   showing "zero data left the device". Privacy as a visible feature, not a
+   slogan.
+
+Adoption helpers: **migration assistant** (import bookmarks/files/wallpaper
+from Windows/macOS), **desktop layout presets** by prior OS (Windows / macOS /
+KDE / GNOME), and **full RU + EN** at launch (RU privacy audience as the
+beachhead). Explicitly NOT in the alpha: Tier 2-4 apps (Office, Mail, Studio,
+mobile) — keep the wedge sharp.
 
 ---
 
@@ -118,6 +149,10 @@ wiring, public ISO hosting, docs site, closed alpha.
 - **WebGPU agents** — browser-as-AI-platform integration
 - **Multi-modal default interaction** — voice + gaze + gesture on camera-equipped devices
 - **Confidential computing** — Intel TDX / AMD SEV-SNP for truly private cloud inference
+- **Unified DeamOS ergonomics** — converge the per-prior-OS layout presets
+  (Windows / macOS / GNOME / KDE, see `docs/spec-familiar-ergonomics.md`) toward
+  one opinionated DeamOS desktop. Years 1-2 we meet users where they are; only
+  once the brand and habits are established do we lead users to a single feel.
 
 ---
 

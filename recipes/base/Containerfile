@@ -13,6 +13,10 @@ FROM ghcr.io/ublue-os/aurora:stable
 COPY recipes/modules/rebrand.sh /tmp/rebrand.sh
 RUN bash /tmp/rebrand.sh && rm -f /tmp/rebrand.sh
 
+# --- First-boot wizard: never lock the user out (account + language) --------
+COPY recipes/modules/initial-setup/install.sh /tmp/initial-setup.sh
+RUN bash /tmp/initial-setup.sh && rm -f /tmp/initial-setup.sh
+
 # --- Branding (A-M1) --------------------------------------------------------
 # All additive: ship our wallpaper package, logo, and a default-wallpaper hint
 # for new users. Nothing here can break boot.
@@ -20,10 +24,24 @@ COPY assets/wallpapers/Deamos /usr/share/wallpapers/Deamos
 COPY assets/logo.svg /usr/share/pixmaps/deamos-logo.svg
 COPY recipes/base/skel/plasma-org.kde.plasma.desktop-appletsrc \
      /etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc
+COPY recipes/base/skel/kscreenlockerrc /etc/skel/.config/kscreenlockerrc
+
+# --- First-login welcome: familiar desktop ergonomics by prior OS ----------
+# Asks "which OS did you come from?" once and reshapes Plasma to match
+# (Windows / macOS / GNOME / classic KDE). See docs/spec-familiar-ergonomics.md.
+COPY recipes/modules/ergonomics/apply-preset.sh   /usr/libexec/deamos/apply-preset.sh
+COPY recipes/modules/ergonomics/layout-windows.js /usr/libexec/deamos/layout-windows.js
+COPY recipes/modules/ergonomics/layout-macos.js   /usr/libexec/deamos/layout-macos.js
+COPY recipes/modules/ergonomics/layout-gnome.js   /usr/libexec/deamos/layout-gnome.js
+COPY recipes/modules/welcome/deamos-welcome.sh    /usr/libexec/deamos/deamos-welcome.sh
+COPY recipes/modules/welcome/deamos-welcome.desktop /etc/xdg/autostart/deamos-welcome.desktop
+RUN chmod +x /usr/libexec/deamos/apply-preset.sh /usr/libexec/deamos/deamos-welcome.sh
 
 # --- Build-time sanity ------------------------------------------------------
 RUN grep -q 'DeamOS' /usr/lib/os-release && \
-    test -f /usr/share/wallpapers/Deamos/contents/images/1920x1080.svg
+    test -f /usr/share/wallpapers/Deamos/contents/images/1920x1080.svg && \
+    test -x /usr/libexec/deamos/apply-preset.sh && \
+    test -x /usr/libexec/deamos/deamos-welcome.sh
 
 # NOTE: plymouth/SDDM themes and KDE layout presets need a boot test before
 # wiring (see assets/README.md).

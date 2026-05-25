@@ -16,4 +16,23 @@ printf '%s\n' \
     'DEAMOS_VERSION="2026.05.0-alpha"' \
     >> /usr/lib/os-release
 
+# --- Boot / login identity --------------------------------------------------
+# The upstream base ships hostname "aurora", which is what the text console
+# shows ("aurora login:") and what SDDM displays. Default it to "deamos"; the
+# installer / initial-setup can still let the user override.
+echo 'deamos' > /etc/hostname
+
+# Login banner printed above the console prompt.
+printf 'DeamOS \\r — a product of free people\n\n' > /etc/issue
+printf 'DeamOS \\r — a product of free people\n\n' > /etc/issue.net
+
+# GRUB title for any non-ostree-BLS path (ostree menu entries derive from the
+# os-release PRETTY_NAME set above).
+if [ -f /etc/default/grub ]; then
+    sed -i 's/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="DeamOS"/' /etc/default/grub || true
+fi
+
 grep -q 'DeamOS' /usr/lib/os-release
+# NOTE: the Plymouth boot-splash theme + the SDDM login theme still reference the
+# upstream brand visually; retheming those needs a boot test (see assets/README.md)
+# and is tracked separately so a bad theme can't break boot.
