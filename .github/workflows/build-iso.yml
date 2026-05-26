@@ -1,13 +1,14 @@
 name: build-iso
 
 # Heavy pipeline (~25-45 min): turn a DeamOS edition image into a bootable
-# Anaconda installer ISO via bootc-image-builder, uploaded as a workflow
-# artifact (standard edition is ~5-6 GB).
+# Anaconda installer ISO via bootc-image-builder, then publish it.
 #
-# NOTE: the ISO is NOT published to GitHub Releases — release assets are capped
-# at 2 GiB and our ISO is larger. Permanent hosting will move to object storage
-# (R2/S3) when there is a public alpha. For now: download from the run's
-# Artifacts. See iso/README.md.
+# DELIVERY: the ISO (~5-6 GB) is split into <2 GiB parts and published as
+# GitHub Release assets. Release assets do NOT count against the Actions
+# artifact-storage quota (which a >2 GiB ISO exhausts almost immediately) and
+# have no per-account size cap — only a 2 GiB per-file cap, which the split
+# sidesteps. Download all parts + SHA256SUMS and rejoin (see REASSEMBLE.txt).
+# Permanent hosting moves to object storage (R2/S3) at public alpha.
 #
 # Triggers:
 #   - workflow_dispatch  -> pick an edition
@@ -42,7 +43,7 @@ jobs:
   iso:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: read
     steps:
       - name: Checkout
@@ -86,12 +87,44 @@ jobs:
           ISO=$(find "$OUT" -name '*.iso' | head -n1)
           sha256sum "$ISO" | tee "$OUT/SHA256SUMS"
 
-      - name: Upload ISO artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: deamos-os-iso
-          path: |
-            ${{ env.OUT }}/**/*.iso
-            ${{ env.OUT }}/SHA256SUMS
-          retention-days: 90
-          if-no-files-found: error
+      - name: Split ISO into <2 GiB parts
+        id: split
+        run: |
+          ISO=$(find "$OUT" -name '*.iso' | head -n1)
+          cd "$OUT"
+          # 1900 MiB parts stay safely under the 2 GiB per-asset cap.
+          split -b 1900M -d "$ISO" deamos-install.iso.part
+          ls -lh deamos-install.iso.part* SHA256SUMS
+          echo "tag=iso-$(date +%Y%m%d-%H%M)-${{ github.event.inputs.edition || 'standard' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Reassembly instructions
+        run: |
+          cat > "$OUT/REASSEMBLE.txt" <<'EOF'
+          DeamOS installer ISO — split into <2 GiB parts (GitHub release asset cap).
+          Download every "deamos-install.iso.part*" file AND SHA256SUMS, then rejoin:
+
+          Linux / macOS:
+            cat deamos-install.iso.part* > install.iso
+
+          Windows (PowerShell):
+            $out=[System.IO.File]::Create("$PWD\install.iso")
+            Get-ChildItem deamos-install.iso.part* | Sort-Object Name | ForEach-Object {
+              $in=[System.IO.File]::OpenRead($_.FullName); $in.CopyTo($out); $in.Close() }
+            $out.Close()
+
+          Verify (the rejoined install.iso must match SHA256SUMS):
+            Linux/macOS:  sha256sum install.iso
+            Windows:      Get-FileHash install.iso -Algorithm SHA256
+          EOF
+          cat "$OUT/REASSEMBLE.txt"
+
+      - name: Publish ISO parts to a Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd "$OUT"
+          gh release create "${{ steps.split.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --title "DeamOS ISO ${{ steps.split.outputs.tag }}" \
+            --notes "Standard DeamOS installer ISO, split into <2 GiB parts. Download all parts + SHA256SUMS and rejoin per REASSEMBLE.txt." \
+            deamos-install.iso.part* SHA256SUMS REASSEMBLE.txt
