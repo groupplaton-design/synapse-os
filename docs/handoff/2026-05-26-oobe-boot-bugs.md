@@ -2,7 +2,7 @@
 
 > **Purpose:** continue this DeamOS work from any device. A fresh Claude Code /
 > Claude session can read this file in the repo, regain full context, and pick up
-> exactly where we stopped. Last updated **2026-05-26**.
+> exactly where we stopped. Last updated **2026-05-29**.
 
 ## TL;DR — where we are
 
@@ -22,7 +22,25 @@ Atomic / bootc) now has:
 The ISO **builds, boots, and installs**. Verified: download → reassemble →
 SHA256 matched (`caf2a59e…a429c1`), GPT + 3 partitions, `bootc` writes correctly.
 
-## ⛔ TWO OPEN BUGS (confirmed on real install 2026-05-26)
+## ✅ TWO BUGS — FIXED IN CODE 2026-05-29, awaiting rebuild + on-device verify
+
+> **Status:** both high-confidence fixes implemented and pushed to `main`
+> (commit `dd4a0c9`). `build-image` CI triggered. **Not yet verified on hardware** —
+> next session must rebuild the ISO and confirm on a real install.
+>
+> - **Wallpaper fix** (`recipes/modules/welcome/deamos-welcome.sh`): after the
+>   picker, run `plasma-apply-wallpaperimage /usr/share/wallpapers/Deamos/`
+>   per-user at first login (ID-independent), with the explicit
+>   `…/contents/images/1920x1080.svg` as a fallback. Skel kept as last resort.
+> - **Layout fix** (`recipes/modules/ergonomics/apply-preset.sh`): new
+>   `plasma_dbus()` helper routes Plasma/KWin calls through `gdbus → qdbus6 →
+>   qdbus` with fully-qualified method names, replacing the `qdbus`-only calls
+>   that silently no-op'd on Plasma 6.
+>
+> If verification fails, run the diagnostics below on the installed box and
+> adjust. Original bug report kept for context:
+
+### Original report (confirmed on real install 2026-05-26)
 
 User installed DeamOS on a PC and reported:
 
