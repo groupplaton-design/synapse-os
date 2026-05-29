@@ -22,6 +22,18 @@ Which OS are you coming from? We'll match the desktop layout." \
 
 /usr/libexec/deamos/apply-preset.sh "$choice" || true
 
+# Apply the DeamOS wallpaper for this user, live, now. The /etc/skel
+# containment-ID hack (appletsrc -> Containments[1]) is unreliable: Plasma's
+# real desktop containment often isn't ID 1, so the skel value is ignored and
+# Aurora's wallpaper wins. Setting it per-user at first login is ID-independent
+# and robust. Brand identity, so apply it regardless of the layout choice.
+if command -v plasma-apply-wallpaperimage >/dev/null 2>&1; then
+    plasma-apply-wallpaperimage "/usr/share/wallpapers/Deamos/" \
+        || plasma-apply-wallpaperimage \
+            "/usr/share/wallpapers/Deamos/contents/images/1920x1080.svg" \
+        || true
+fi
+
 mkdir -p "$(dirname "$flag")"
 date > "$flag"
 

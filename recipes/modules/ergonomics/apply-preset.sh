@@ -15,6 +15,30 @@ here="$(dirname "$(readlink -f "$0")")"
 
 kw() { kwriteconfig6 "$@"; }
 
+# Call a Plasma/KWin D-Bus method, surviving Plasma 6's CLI churn. Plain `qdbus`
+# is frequently ABSENT on Plasma 6 (it ships `qdbus6`; many setups have `gdbus`),
+# so the old `qdbus`-only calls silently no-op'd and the preset never applied.
+# Try gdbus -> qdbus6 -> qdbus. Args: <service> <object-path> <method> [arg]
+plasma_dbus() {
+    local svc="$1" path="$2" method="$3" arg="${4-}"
+    if command -v gdbus >/dev/null 2>&1; then
+        if [ $# -ge 4 ]; then
+            gdbus call --session --dest "$svc" --object-path "$path" \
+                --method "$method" "$arg"
+        else
+            gdbus call --session --dest "$svc" --object-path "$path" \
+                --method "$method"
+        fi
+    elif command -v qdbus6 >/dev/null 2>&1; then
+        if [ $# -ge 4 ]; then qdbus6 "$svc" "$path" "$method" "$arg"; else qdbus6 "$svc" "$path" "$method"; fi
+    elif command -v qdbus >/dev/null 2>&1; then
+        if [ $# -ge 4 ]; then qdbus "$svc" "$path" "$method" "$arg"; else qdbus "$svc" "$path" "$method"; fi
+    else
+        echo "apply-preset: no D-Bus CLI (gdbus/qdbus6/qdbus) found" >&2
+        return 1
+    fi
+}
+
 apply_decorations_right() {
     # Window buttons on the right (Windows / GNOME): menu left, min/max/close right.
     kw --file kwinrc --group org.kde.kdecoration2 --key ButtonsOnLeft "M"
@@ -30,8 +54,8 @@ load_layout() {
     local js="$here/layout-$1.js"
     [ -f "$js" ] || { echo "no layout script for '$1'"; return 0; }
     # Replace the current panel layout with the preset's.
-    qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
-        "$(cat "$js")"
+    plasma_dbus org.kde.plasmashell /PlasmaShell \
+        org.kde.PlasmaShell.evaluateScript "$(cat "$js")"
 }
 
 case "$preset" in
@@ -55,5 +79,6 @@ case "$preset" in
         ;;
 esac
 
-# Apply window-decoration / behaviour changes live.
-qdbus org.kde.KWin /KWin reconfigure 2>/dev/null || true
+# Apply window-decoration / behaviour changes live (fully-qualified method name
+# is required by gdbus; qdbus accepts it too).
+plasma_dbus org.kde.KWin /KWin org.kde.KWin.reconfigure 2>/dev/null || true
