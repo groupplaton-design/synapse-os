@@ -15,6 +15,15 @@ for f in deamos.plymouth deamos.script background.png d.png; do
     test -f "$THEME_DIR/$f" || { echo "plymouth: missing $THEME_DIR/$f" >&2; exit 1; }
 done
 
+# The "script" theme type needs Plymouth's script renderer plugin
+# (/usr/lib64/plymouth/script.so), which the Aurora base does not ship. Install
+# it, or `plymouth-set-default-theme` fails with "script.so does not exist".
+if [ ! -e /usr/lib64/plymouth/script.so ]; then
+    dnf install -y plymouth-plugin-script
+fi
+test -e /usr/lib64/plymouth/script.so \
+    || { echo "plymouth: script.so still missing after install" >&2; exit 1; }
+
 # Make DeamOS the default Plymouth theme.
 plymouth-set-default-theme deamos
 
