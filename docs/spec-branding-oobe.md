@@ -153,12 +153,20 @@ Step 2 (after wallpapers land): wrap each into a Look-and-Feel KPackage under
 
 ---
 
-## Implementation order (one ISO cycle once files land)
+## Implementation order — status 2026-05-30
 
-1. ✅ 4 color schemes (this commit, file-independent).
-2. OOBE: `welcome` → `deamos-setup` consolidation (lang echo + OS picker, one flag).
-3. Wallpaper KPackage(s) from the new art (multi-res) + set default, kill Aurora art.
-4. SDDM + lock-screen backgrounds.
-5. Plymouth `deamos` theme (D-fill progress) + initramfs regen.
-6. 4 Look-and-Feel packages bundling color scheme + wallpaper; default = dark.
-7. Build image → ISO → flash DD → verify every surface on hardware.
+1. ✅ 4 color schemes → `/usr/share/color-schemes` (Dark/Light/Neon/Graphite).
+2. ✅ OOBE: first-run setup at autostart **phase 1**, reframed, shows the set
+   language, single flag. Item 1: no kickstart pins `lang` → Anaconda shows its
+   language screen by default.
+3. ✅ Wallpapers DeamosHero/Logo/Wave (KPackage). Desktop default = **DeamosWave**
+   (dark D + waveform), set in skel + applied at first login → kills Aurora art.
+4. ✅ Lock screen → DeamosWave; SDDM login → Breeze + `login-bg.png` (logo art).
+5. ✅ Plymouth `deamos`: hero background + pulsing D, with LUKS password/question/
+   message callbacks; installs `plymouth-plugin-script`, regenerates initramfs.
+   ISO `iso-20260530-*-standard` built. **VM-test boot + LUKS unlock before HW.**
+6. ⏭️ 4 Look-and-Feel (Global Theme) packages bundling scheme + wallpaper — polish
+   follow-up; the 4 color schemes already satisfy "4 themes" for now.
+
+> Images are only **1672×941** (below FHD) → boot/desktop will be soft on 1080p/4K.
+> Regenerate at **3840×2160** for the real release.
