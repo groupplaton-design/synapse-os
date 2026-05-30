@@ -140,7 +140,9 @@ above (gdbus + plasma-apply-wallpaperimage) and rebuild.
 - Validate Plymouth boot-splash + SDDM login theming (still upstream Aurora).
 - Fine-tune layout presets against real Plasma 6 behaviour.
 - Build **C-M1**: AI-operates-the-OS (typed capability tools — set_wallpaper,
-  set_color_scheme, wifi_connect, app_install, screenshot_explain…).
+  set_color_scheme, set_volume, set_brightness first). **Implementation plan
+  ready:** [`docs/plan-c-m1-action-framework.md`](../plan-c-m1-action-framework.md)
+  (new `src/actions/` module + risk-aware gate, grounded in the current agent).
 - Cloud install (restore your saved OS image) — see roadmap differentiators.
 - Housekeeping: delete orphaned `veil-*` GHCR packages (needs
   `gh auth refresh -s delete:packages`).
