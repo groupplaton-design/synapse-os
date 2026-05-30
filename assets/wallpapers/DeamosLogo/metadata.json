@@ -1,0 +1,10 @@
+{
+  "KPlugin": {
+    "Id": "DeamosLogo",
+    "Name": "DeamOS Logo",
+    "License": "Apache-2.0",
+    "Authors": [
+      { "Name": "DeamOS Project" }
+    ]
+  }
+}

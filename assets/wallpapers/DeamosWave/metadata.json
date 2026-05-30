@@ -1,0 +1,10 @@
+{
+  "KPlugin": {
+    "Id": "DeamosWave",
+    "Name": "DeamOS Wave",
+    "License": "Apache-2.0",
+    "Authors": [
+      { "Name": "DeamOS Project" }
+    ]
+  }
+}

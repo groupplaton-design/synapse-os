@@ -21,12 +21,33 @@ RUN bash /tmp/initial-setup.sh && rm -f /tmp/initial-setup.sh
 # All additive: ship our wallpaper package, logo, and a default-wallpaper hint
 # for new users. Nothing here can break boot.
 COPY assets/wallpapers/Deamos /usr/share/wallpapers/Deamos
+# Brand wallpapers (raster). DeamosWave (dark D + waveform) is the desktop
+# default that replaces Aurora's cartoon art; Hero + Logo are also offered.
+COPY assets/wallpapers/DeamosHero /usr/share/wallpapers/DeamosHero
+COPY assets/wallpapers/DeamosLogo /usr/share/wallpapers/DeamosLogo
+COPY assets/wallpapers/DeamosWave /usr/share/wallpapers/DeamosWave
 COPY assets/logo.svg /usr/share/pixmaps/deamos-logo.svg
 # DeamOS color schemes (4 themes) → selectable in System Settings → Colors.
 COPY assets/color-schemes/ /usr/share/color-schemes/
+# Branding images for boot/login/lock surfaces.
+COPY assets/branding/ /usr/share/deamos/branding/
 COPY recipes/base/skel/plasma-org.kde.plasma.desktop-appletsrc \
      /etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc
 COPY recipes/base/skel/kscreenlockerrc /etc/skel/.config/kscreenlockerrc
+
+# --- Login screen (SDDM): Breeze theme with our login background ------------
+COPY recipes/modules/sddm/deamos.conf       /etc/sddm.conf.d/deamos.conf
+COPY recipes/modules/sddm/theme.conf.user   /usr/share/sddm/themes/breeze/theme.conf.user
+
+# --- Boot splash (Plymouth): hero background + pulsing D --------------------
+# Regenerates the initramfs. The theme implements the LUKS password prompt;
+# smoke-test boot + disk unlock in a VM before hardware.
+COPY recipes/modules/plymouth/deamos.plymouth /usr/share/plymouth/themes/deamos/deamos.plymouth
+COPY recipes/modules/plymouth/deamos.script   /usr/share/plymouth/themes/deamos/deamos.script
+COPY assets/branding/boot-splash.png          /usr/share/plymouth/themes/deamos/background.png
+COPY assets/branding/logo-D.png               /usr/share/plymouth/themes/deamos/d.png
+COPY recipes/modules/plymouth/install.sh      /tmp/plymouth-install.sh
+RUN bash /tmp/plymouth-install.sh && rm -f /tmp/plymouth-install.sh
 
 # --- First-login welcome: familiar desktop ergonomics by prior OS ----------
 # Asks "which OS did you come from?" once and reshapes Plasma to match
@@ -41,10 +62,14 @@ RUN chmod +x /usr/libexec/deamos/apply-preset.sh /usr/libexec/deamos/deamos-welc
 
 # --- Build-time sanity ------------------------------------------------------
 RUN grep -q 'DeamOS' /usr/lib/os-release && \
-    test -f /usr/share/wallpapers/Deamos/contents/images/1920x1080.svg && \
+    test -f /usr/share/wallpapers/DeamosWave/contents/images/1672x941.png && \
+    test -f /usr/share/wallpapers/DeamosHero/contents/images/1672x941.png && \
     test -f /usr/share/color-schemes/DeamOSDark.colors && \
+    test -f /usr/share/deamos/branding/login-bg.png && \
+    test -f /usr/share/plymouth/themes/deamos/background.png && \
     test -x /usr/libexec/deamos/apply-preset.sh && \
     test -x /usr/libexec/deamos/deamos-welcome.sh
 
-# NOTE: plymouth/SDDM themes and KDE layout presets need a boot test before
-# wiring (see assets/README.md).
+# NOTE: KDE layout presets need a boot test (see assets/README.md). The Plymouth
+# theme + SDDM login background are now wired; verify the boot splash, the LUKS
+# unlock prompt, and the login background in a VM before shipping to hardware.

@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=DeamOS
+Description=DeamOS boot splash — hero background with a pulsing D
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/deamos
+ScriptFile=/usr/share/plymouth/themes/deamos/deamos.script

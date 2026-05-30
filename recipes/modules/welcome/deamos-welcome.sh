@@ -22,16 +22,21 @@ Which OS are you coming from? We'll match the desktop layout." \
 
 /usr/libexec/deamos/apply-preset.sh "$choice" || true
 
-# Apply the DeamOS wallpaper for this user, live, now. The /etc/skel
-# containment-ID hack (appletsrc -> Containments[1]) is unreliable: Plasma's
-# real desktop containment often isn't ID 1, so the skel value is ignored and
-# Aurora's wallpaper wins. Setting it per-user at first login is ID-independent
-# and robust. Brand identity, so apply it regardless of the layout choice.
+# Apply the DeamOS look for this user, live, now — brand identity, regardless of
+# the layout choice. The /etc/skel containment-ID hack (appletsrc ->
+# Containments[1]) is unreliable: Plasma's real desktop containment often isn't
+# ID 1, so the skel value is ignored and Aurora's "человечки" wallpaper wins.
+# Setting it per-user at first login is ID-independent and robust.
+# Desktop wallpaper = the dark "D + waveform" art (replaces the Aurora cartoon).
 if command -v plasma-apply-wallpaperimage >/dev/null 2>&1; then
-    plasma-apply-wallpaperimage "/usr/share/wallpapers/Deamos/" \
+    plasma-apply-wallpaperimage "/usr/share/wallpapers/DeamosWave/" \
         || plasma-apply-wallpaperimage \
-            "/usr/share/wallpapers/Deamos/contents/images/1920x1080.svg" \
+            "/usr/share/wallpapers/DeamosWave/contents/images/1672x941.png" \
         || true
+fi
+# Default colour theme: DeamOS Dark.
+if command -v plasma-apply-colorscheme >/dev/null 2>&1; then
+    plasma-apply-colorscheme DeamOSDark || plasma-apply-colorscheme "DeamOS Dark" || true
 fi
 
 mkdir -p "$(dirname "$flag")"
