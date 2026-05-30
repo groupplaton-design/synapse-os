@@ -25,8 +25,11 @@ SHA256 matched (`caf2a59e…a429c1`), GPT + 3 partitions, `bootc` writes correct
 ## ✅ TWO BUGS — FIXED IN CODE 2026-05-29, awaiting rebuild + on-device verify
 
 > **Status:** both high-confidence fixes implemented and pushed to `main`
-> (commit `dd4a0c9`). `build-image` CI triggered. **Not yet verified on hardware** —
-> next session must rebuild the ISO and confirm on a real install.
+> (commit `dd4a0c9`). `build-image` ✅ green, `build-iso` ✅ green — ISO published as
+> Release **`iso-20260529-1810-standard`** (sha256 of rejoined install.iso:
+> `f5b021b3c23590df21191291220cb2bc63708b49bffdbade9327a9d81893f522`).
+> **Not yet verified on hardware** — flash DD-mode, boot, confirm wallpaper is
+> DeamOS (not Aurora) and that picking "Windows" actually rebuilds the panels.
 >
 > - **Wallpaper fix** (`recipes/modules/welcome/deamos-welcome.sh`): after the
 >   picker, run `plasma-apply-wallpaperimage /usr/share/wallpapers/Deamos/`
