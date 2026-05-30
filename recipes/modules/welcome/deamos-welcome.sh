@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-# First-login welcome: ask which OS the user came from and shape the desktop to
-# match (minimise relearning). Runs once per user via /etc/xdg/autostart.
+# DeamOS first-run setup: the SINGLE up-front question. Language is chosen during
+# install (Anaconda) and on first boot (initial-setup, before login); this is the
+# one remaining choice — which OS you came from — asked ONCE at the very start of
+# the first session (autostart phase 1) and never again (guarded by one flag). It
+# then applies the matching layout, the DeamOS wallpaper and theme.
 set -euo pipefail
 
 flag="${XDG_STATE_HOME:-$HOME/.local/state}/deamos/welcome-done"
@@ -9,10 +12,16 @@ flag="${XDG_STATE_HOME:-$HOME/.local/state}/deamos/welcome-done"
 # Wait for the Plasma session to be ready enough to script.
 sleep 4
 
-choice=$(kdialog --title "Welcome to DeamOS" --radiolist \
-"Откуда вы перешли? Подберём привычный вид рабочего стола.
+# Show the language already set (install / initial-setup) so the user sees it is
+# handled and is not asked for it again here.
+lang_now="${LANG:-${LC_ALL:-не задан / unset}}"
 
-Which OS are you coming from? We'll match the desktop layout." \
+choice=$(kdialog --title "DeamOS — первичная настройка / First-time setup" --radiolist \
+"Язык уже выбран при установке: ${lang_now}. Сменить можно в Параметрах.
+Последний шаг настройки — подберём привычный вид рабочего стола.
+
+Language (set at install): ${lang_now}. Final setup step — pick a familiar layout.
+Откуда вы перешли? / Which OS are you coming from?" \
     windows "Windows" on \
     macos   "macOS" off \
     gnome   "Ubuntu / GNOME" off \

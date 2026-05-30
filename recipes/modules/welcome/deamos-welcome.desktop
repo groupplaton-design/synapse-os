@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=DeamOS Welcome
-Comment=Match the desktop to the OS you came from
+Name=DeamOS Setup
+Comment=One-time first-run setup: match the desktop to the OS you came from
 Exec=/usr/libexec/deamos/deamos-welcome.sh
 OnlyShowIn=KDE;
-X-KDE-autostart-phase=2
+X-KDE-autostart-phase=1
 NoDisplay=true
