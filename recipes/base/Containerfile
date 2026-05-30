@@ -22,6 +22,8 @@ RUN bash /tmp/initial-setup.sh && rm -f /tmp/initial-setup.sh
 # for new users. Nothing here can break boot.
 COPY assets/wallpapers/Deamos /usr/share/wallpapers/Deamos
 COPY assets/logo.svg /usr/share/pixmaps/deamos-logo.svg
+# DeamOS color schemes (4 themes) → selectable in System Settings → Colors.
+COPY assets/color-schemes/ /usr/share/color-schemes/
 COPY recipes/base/skel/plasma-org.kde.plasma.desktop-appletsrc \
      /etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc
 COPY recipes/base/skel/kscreenlockerrc /etc/skel/.config/kscreenlockerrc
@@ -40,6 +42,7 @@ RUN chmod +x /usr/libexec/deamos/apply-preset.sh /usr/libexec/deamos/deamos-welc
 # --- Build-time sanity ------------------------------------------------------
 RUN grep -q 'DeamOS' /usr/lib/os-release && \
     test -f /usr/share/wallpapers/Deamos/contents/images/1920x1080.svg && \
+    test -f /usr/share/color-schemes/DeamOSDark.colors && \
     test -x /usr/libexec/deamos/apply-preset.sh && \
     test -x /usr/libexec/deamos/deamos-welcome.sh
 
