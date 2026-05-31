@@ -35,7 +35,12 @@ RUN chmod +x /usr/bin/deamos-firstboot && systemctl --global enable deamos-first
 COPY recipes/modules/omnibox/deamos-omnibox.sh /usr/bin/deamos-omnibox
 COPY recipes/modules/omnibox/deamos-omnibox.desktop /usr/share/applications/deamos-omnibox.desktop
 COPY recipes/modules/omnibox/kglobalshortcutsrc /etc/skel/.config/kglobalshortcutsrc
-RUN chmod +x /usr/bin/deamos-omnibox
+# Also drop the AI launcher onto every new user's Desktop so it is always
+# visible (no hunting for it). Marked executable so Plasma launches it without
+# the "untrusted desktop file" prompt.
+RUN mkdir -p /etc/skel/Desktop \
+    && cp /usr/share/applications/deamos-omnibox.desktop /etc/skel/Desktop/deamos-omnibox.desktop \
+    && chmod +x /usr/bin/deamos-omnibox /etc/skel/Desktop/deamos-omnibox.desktop
 
 # Mark the edition.
 RUN sed -i 's/^DEAMOS_EDITION=.*/DEAMOS_EDITION="standard"/' /usr/lib/os-release

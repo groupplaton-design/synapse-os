@@ -1,10 +1,14 @@
 [Desktop Entry]
 Type=Application
-Name=Deamos Agent
+Name=DeamOS AI
+Name[ru]=ИИ DeamOS
 GenericName=AI Assistant
-Comment=Ask the local AI agent
+GenericName[ru]=ИИ-ассистент
+Comment=Ask the local AI — type a task in plain language
+Comment[ru]=Спросите локальный ИИ — напишите задачу простым языком
 Exec=/usr/bin/deamos-omnibox
 Icon=/usr/share/pixmaps/deamos-logo.svg
 Terminal=false
-Categories=Utility;
+Categories=Utility;Education;
 Keywords=ai;agent;assistant;deamos;ask;
+Keywords[ru]=ии;агент;ассистент;нейросеть;
