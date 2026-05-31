@@ -1,56 +1,79 @@
 #!/usr/bin/env bash
-# DeamOS first-run setup: the SINGLE up-front question. Language is chosen during
-# install (Anaconda) and on first boot (initial-setup, before login); this is the
-# one remaining choice — which OS you came from — asked ONCE at the very start of
-# the first session (autostart phase 1) and never again (guarded by one flag). It
-# then applies the matching layout, the DeamOS wallpaper and theme.
-set -euo pipefail
+# DeamOS first-run setup: the single up-front wizard, shown ONCE at first login
+# (autostart phase 1) and never again. Two questions — language, then which OS
+# you came from — then it applies the language, the matching layout, and the
+# DeamOS wallpaper + theme.
+#
+# NOTE: the done-flag is written BEFORE applying anything, so a failure (or a
+# crash) while applying can never make the wizard reappear on the next login.
+set -uo pipefail   # not -e: a failing apply step must not abort before we finish
 
-flag="${XDG_STATE_HOME:-$HOME/.local/state}/deamos/welcome-done"
-[ -f "$flag" ] && exit 0
+flag="${XDG_STATE_HOME:-$HOME/.local/state}/deamos/setup-done"
+# Migrate the old flag name so existing installs don't see the wizard again.
+old_flag="${XDG_STATE_HOME:-$HOME/.local/state}/deamos/welcome-done"
+{ [ -f "$flag" ] || [ -f "$old_flag" ]; } && exit 0
 
 # Wait for the Plasma session to be ready enough to script.
 sleep 4
 
-# Show the language already set (install / initial-setup) so the user sees it is
-# handled and is not asked for it again here.
-lang_now="${LANG:-${LC_ALL:-не задан / unset}}"
+# ---- Step 1: language -------------------------------------------------------
+lang=$(kdialog --title "DeamOS — язык / language" --radiolist \
+"Выберите язык системы / Choose your system language:" \
+    ru "Русский" on \
+    en "English" off) || lang="ru"
+[ -n "$lang" ] || lang="ru"
 
-choice=$(kdialog --title "DeamOS — первичная настройка / First-time setup" --radiolist \
-"Язык уже выбран при установке: ${lang_now}. Сменить можно в Параметрах.
-Последний шаг настройки — подберём привычный вид рабочего стола.
+case "$lang" in
+    ru) locale="ru_RU.UTF-8"; tr="ru" ;;
+    *)  locale="en_US.UTF-8"; tr="en_US" ;;
+esac
 
-Language (set at install): ${lang_now}. Final setup step — pick a familiar layout.
-Откуда вы перешли? / Which OS are you coming from?" \
+# ---- Step 2: which OS did you come from? ------------------------------------
+if [ "$lang" = "ru" ]; then
+    prompt="Откуда вы перешли? Подберём привычный вид рабочего стола."
+else
+    prompt="Which OS are you coming from? We'll match the desktop layout."
+fi
+choice=$(kdialog --title "DeamOS — первичная настройка / first-time setup" --radiolist \
+"$prompt" \
     windows "Windows" on \
     macos   "macOS" off \
     gnome   "Ubuntu / GNOME" off \
-    kde     "Linux / KDE — как есть / keep as-is" off) || choice="kde"
-
+    kde     "Linux / KDE" off) || choice="kde"
 [ -n "$choice" ] || choice="kde"
 
+# ---- Write the done-flag NOW (before applying) so it never repeats ----------
+mkdir -p "$(dirname "$flag")"
+date > "$flag"
+
+# ---- Apply language (per-user; takes full effect after re-login) ------------
+mkdir -p "$HOME/.config"
+cat > "$HOME/.config/plasma-localerc" <<EOF
+[Formats]
+LANG=${locale}
+
+[Translations]
+LANGUAGE=${tr}
+EOF
+
+# ---- Apply the familiar layout preset ---------------------------------------
 /usr/libexec/deamos/apply-preset.sh "$choice" || true
 
-# Apply the DeamOS look for this user, live, now — brand identity, regardless of
-# the layout choice. The /etc/skel containment-ID hack (appletsrc ->
-# Containments[1]) is unreliable: Plasma's real desktop containment often isn't
-# ID 1, so the skel value is ignored and Aurora's "человечки" wallpaper wins.
-# Setting it per-user at first login is ID-independent and robust.
-# Desktop wallpaper = the dark "D + waveform" art (replaces the Aurora cartoon).
+# ---- DeamOS look: wallpaper (dark "D + waveform") + Dark theme --------------
 if command -v plasma-apply-wallpaperimage >/dev/null 2>&1; then
     plasma-apply-wallpaperimage "/usr/share/wallpapers/DeamosWave/" \
         || plasma-apply-wallpaperimage \
             "/usr/share/wallpapers/DeamosWave/contents/images/1672x941.png" \
         || true
 fi
-# Default colour theme: DeamOS Dark.
 if command -v plasma-apply-colorscheme >/dev/null 2>&1; then
     plasma-apply-colorscheme DeamOSDark || plasma-apply-colorscheme "DeamOS Dark" || true
 fi
 
-mkdir -p "$(dirname "$flag")"
-date > "$flag"
-
-kdialog --title "DeamOS" --passivepopup \
-    "Рабочий стол настроен под: $choice. Изменить можно позже. / Desktop set to: $choice." 6 \
-    || true
+# ---- Tell the user; offer to re-login so the language applies fully ---------
+if [ "$lang" = "ru" ]; then
+    msg="Настройка готова (вид: $choice). Чтобы русский применился полностью, выйдите и войдите снова."
+else
+    msg="Setup done (layout: $choice). Log out and back in for the language to fully apply."
+fi
+kdialog --title "DeamOS" --passivepopup "$msg" 8 || true

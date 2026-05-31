@@ -17,6 +17,12 @@ RUN bash /tmp/rebrand.sh && rm -f /tmp/rebrand.sh
 COPY recipes/modules/initial-setup/install.sh /tmp/initial-setup.sh
 RUN bash /tmp/initial-setup.sh && rm -f /tmp/initial-setup.sh
 
+# --- Language support: ship Russian + English so the OS can switch UI/locale -
+# Without these langpacks the desktop is stuck in English (no ru translations
+# or ru_RU locale present). The first-run wizard lets the user pick the language.
+RUN dnf install -y glibc-langpack-en glibc-langpack-ru langpacks-ru || \
+    dnf install -y glibc-langpack-en glibc-langpack-ru
+
 # --- Branding (A-M1) --------------------------------------------------------
 # All additive: ship our wallpaper package, logo, and a default-wallpaper hint
 # for new users. Nothing here can break boot.
@@ -36,7 +42,8 @@ COPY recipes/base/skel/plasma-org.kde.plasma.desktop-appletsrc \
 COPY recipes/base/skel/kscreenlockerrc /etc/skel/.config/kscreenlockerrc
 
 # --- Login screen (SDDM): Breeze theme with our login background ------------
-COPY recipes/modules/sddm/deamos.conf       /etc/sddm.conf.d/deamos.conf
+# Drop-in named to sort LAST so it wins over Aurora's own sddm.conf.d files.
+COPY recipes/modules/sddm/deamos.conf       /etc/sddm.conf.d/zzz-deamos.conf
 COPY recipes/modules/sddm/theme.conf.user   /usr/share/sddm/themes/breeze/theme.conf.user
 
 # --- Boot splash (Plymouth): hero background + pulsing D --------------------
