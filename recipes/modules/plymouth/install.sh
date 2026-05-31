@@ -11,7 +11,7 @@ THEME_DIR=/usr/share/plymouth/themes/deamos
 
 # The Containerfile COPYs deamos.plymouth, deamos.script, background.png and
 # d.png into $THEME_DIR before this script runs. Verify they are present.
-for f in deamos.plymouth deamos.script background.png d.png; do
+for f in deamos.plymouth deamos.script ring.png; do
     test -f "$THEME_DIR/$f" || { echo "plymouth: missing $THEME_DIR/$f" >&2; exit 1; }
 done
 

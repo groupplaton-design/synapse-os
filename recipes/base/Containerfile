@@ -46,13 +46,12 @@ COPY recipes/base/skel/kscreenlockerrc /etc/skel/.config/kscreenlockerrc
 COPY recipes/modules/sddm/deamos.conf       /etc/sddm.conf.d/zzz-deamos.conf
 COPY recipes/modules/sddm/theme.conf.user   /usr/share/sddm/themes/breeze/theme.conf.user
 
-# --- Boot splash (Plymouth): hero background + pulsing D --------------------
+# --- Boot splash (Plymouth): minimalist spinning ring on black --------------
 # Regenerates the initramfs. The theme implements the LUKS password prompt;
 # smoke-test boot + disk unlock in a VM before hardware.
 COPY recipes/modules/plymouth/deamos.plymouth /usr/share/plymouth/themes/deamos/deamos.plymouth
 COPY recipes/modules/plymouth/deamos.script   /usr/share/plymouth/themes/deamos/deamos.script
-COPY assets/branding/boot-splash.png          /usr/share/plymouth/themes/deamos/background.png
-COPY assets/branding/logo-D.png               /usr/share/plymouth/themes/deamos/d.png
+COPY assets/branding/ring.png                 /usr/share/plymouth/themes/deamos/ring.png
 COPY recipes/modules/plymouth/install.sh      /tmp/plymouth-install.sh
 RUN bash /tmp/plymouth-install.sh && rm -f /tmp/plymouth-install.sh
 
@@ -73,7 +72,7 @@ RUN grep -q 'DeamOS' /usr/lib/os-release && \
     test -f /usr/share/wallpapers/DeamosHero/contents/images/1672x941.png && \
     test -f /usr/share/color-schemes/DeamOSDark.colors && \
     test -f /usr/share/deamos/branding/login-bg.png && \
-    test -f /usr/share/plymouth/themes/deamos/background.png && \
+    test -f /usr/share/plymouth/themes/deamos/ring.png && \
     test -x /usr/libexec/deamos/apply-preset.sh && \
     test -x /usr/libexec/deamos/deamos-welcome.sh
 
